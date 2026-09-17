@@ -1,0 +1,14 @@
+{
+  "title": "Watering Manager",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Watering Manager",
+        "description": "Adds a Watering page to the sidebar. Watering systems are created and managed from that page."
+      }
+    },
+    "abort": {
+      "already_configured": "Watering Manager is already configured."
+    }
+  }
+}
