@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 import logging
 from typing import Any
 from uuid import uuid4
@@ -72,7 +72,7 @@ class WateringManager:
         system = deepcopy(DEFAULT_SYSTEM)
         system.update({key: value for key, value in values.items() if key in DEFAULT_SYSTEM})
         system["id"] = uuid4().hex
-        now = dt_util.utcnow().isoformat()
+        now = datetime.now(UTC).isoformat()
         system["created_at"] = now
         system["updated_at"] = now
         system["last_run_at"] = None
@@ -91,7 +91,7 @@ class WateringManager:
         for key, value in values.items():
             if key not in protected and key in DEFAULT_SYSTEM:
                 system[key] = value
-        system["updated_at"] = dt_util.utcnow().isoformat()
+        system["updated_at"] = datetime.now(UTC).isoformat()
         await self._async_changed()
         return system
 
@@ -216,7 +216,7 @@ class WateringManager:
         total_seconds = int(round(float(decision["duration"]) * 60))
         cycles = max(1, int(system["soak_cycles"]))
         cycle_seconds = max(1, total_seconds // cycles)
-        started = dt_util.utcnow()
+        started = datetime.now(UTC)
         loop = asyncio.get_running_loop()
         valve_opened_at: float | None = None
         total_open_seconds = 0.0
@@ -282,7 +282,7 @@ class WateringManager:
             value = float(state.state)
         except ValueError:
             return {"entity_id": entity_id, "valid": False, "reason": "not_numeric"}
-        age = dt_util.utcnow() - state.last_updated
+        age = datetime.now(UTC) - state.last_updated
         max_age = timedelta(minutes=int(system["sensor_max_age_minutes"]))
         if age > max_age:
             return {
@@ -358,7 +358,7 @@ class WateringManager:
             last = datetime.fromisoformat(last_run)
         except ValueError:
             return False
-        return dt_util.utcnow() - last < timedelta(
+        return datetime.now(UTC) - last < timedelta(
             hours=float(system["minimum_interval_hours"])
         )
 
@@ -397,7 +397,7 @@ class WateringManager:
                 "id": uuid4().hex,
                 "system_id": system["id"],
                 "system_name": system["name"],
-                "timestamp": dt_util.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "trigger": trigger,
                 "mode": system["mode"],
                 "status": status,
