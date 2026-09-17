@@ -16,6 +16,7 @@ from .const import (
     DOMAIN,
     PANEL_ELEMENT,
     PANEL_MODULE_URL,
+    PANEL_STATIC_URL,
     PANEL_URL,
 )
 from .manager import WateringManager
@@ -34,7 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.http.async_register_static_paths(
         [
             StaticPathConfig(
-                PANEL_MODULE_URL,
+                PANEL_STATIC_URL,
                 str(frontend_path),
                 cache_headers=False,
             )
