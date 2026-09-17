@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import logging
+
 import voluptuous as vol
 
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant
 
 from .manager import WateringManager
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def async_register_websocket_api(
@@ -31,7 +35,14 @@ def async_register_websocket_api(
     @websocket_api.async_response
     async def create_system(hass, connection, msg):
         connection.require_admin()
-        system = await manager.async_create_system(msg["system"])
+        try:
+            system = await manager.async_create_system(msg["system"])
+        except Exception as err:
+            _LOGGER.exception("Unable to create watering system")
+            connection.send_error(
+                msg["id"], "create_failed", f"Unable to create system: {err}"
+            )
+            return
         connection.send_result(msg["id"], system)
 
     @websocket_api.websocket_command(
