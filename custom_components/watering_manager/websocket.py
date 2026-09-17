@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-import voluptuous as vol
+import probatio
 
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant
@@ -20,7 +20,7 @@ def async_register_websocket_api(
     """Register panel commands."""
 
     @websocket_api.websocket_command(
-        {vol.Required("type"): "watering_manager/get_state"}
+        {probatio.Required("type"): "watering_manager/get_state"}
     )
     @websocket_api.async_response
     async def get_state(hass, connection, msg):
@@ -28,13 +28,13 @@ def async_register_websocket_api(
 
     @websocket_api.websocket_command(
         {
-            vol.Required("type"): "watering_manager/create_system",
-            vol.Required("system"): dict,
+            probatio.Required("type"): "watering_manager/create_system",
+            probatio.Required("system"): dict,
         }
     )
+    @websocket_api.require_admin
     @websocket_api.async_response
     async def create_system(hass, connection, msg):
-        connection.require_admin()
         try:
             system = await manager.async_create_system(msg["system"])
         except Exception as err:
@@ -47,14 +47,14 @@ def async_register_websocket_api(
 
     @websocket_api.websocket_command(
         {
-            vol.Required("type"): "watering_manager/update_system",
-            vol.Required("system_id"): str,
-            vol.Required("system"): dict,
+            probatio.Required("type"): "watering_manager/update_system",
+            probatio.Required("system_id"): str,
+            probatio.Required("system"): dict,
         }
     )
+    @websocket_api.require_admin
     @websocket_api.async_response
     async def update_system(hass, connection, msg):
-        connection.require_admin()
         try:
             system = await manager.async_update_system(
                 msg["system_id"], msg["system"]
@@ -66,13 +66,13 @@ def async_register_websocket_api(
 
     @websocket_api.websocket_command(
         {
-            vol.Required("type"): "watering_manager/delete_system",
-            vol.Required("system_id"): str,
+            probatio.Required("type"): "watering_manager/delete_system",
+            probatio.Required("system_id"): str,
         }
     )
+    @websocket_api.require_admin
     @websocket_api.async_response
     async def delete_system(hass, connection, msg):
-        connection.require_admin()
         try:
             await manager.async_delete_system(msg["system_id"])
         except ValueError as err:
@@ -82,13 +82,13 @@ def async_register_websocket_api(
 
     @websocket_api.websocket_command(
         {
-            vol.Required("type"): "watering_manager/run_system",
-            vol.Required("system_id"): str,
+            probatio.Required("type"): "watering_manager/run_system",
+            probatio.Required("system_id"): str,
         }
     )
+    @websocket_api.require_admin
     @websocket_api.async_response
     async def run_system(hass, connection, msg):
-        connection.require_admin()
         try:
             decision = await manager.async_run_system(msg["system_id"], "manual")
         except ValueError as err:
@@ -98,13 +98,13 @@ def async_register_websocket_api(
 
     @websocket_api.websocket_command(
         {
-            vol.Required("type"): "watering_manager/stop_system",
-            vol.Required("system_id"): str,
+            probatio.Required("type"): "watering_manager/stop_system",
+            probatio.Required("system_id"): str,
         }
     )
+    @websocket_api.require_admin
     @websocket_api.async_response
     async def stop_system(hass, connection, msg):
-        connection.require_admin()
         try:
             await manager.async_stop_system(msg["system_id"])
         except ValueError as err:
