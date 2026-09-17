@@ -1,3 +1,5 @@
+const WM_VERSION = "0.1.3";
+
 const WM_TRANSLATIONS = {
   en: {
     app: "Watering Manager", systems: "Watering systems", newSystem: "New system",
@@ -39,6 +41,7 @@ const WM_TRANSLATIONS = {
     addTitle: "Create watering system", addHelp: "Give the system a name. All entities and automatic settings can be selected immediately afterwards.",
     cancel: "Cancel", create: "Create", percent: "%", hours: "hours",
     sensorStale: "minutes", systemsCount: "systems", updated: "Updated",
+    help: "Help", close: "Close",
   },
   el: {
     app: "Διαχείριση ποτίσματος", systems: "Συστήματα ποτίσματος", newSystem: "Νέο σύστημα",
@@ -80,6 +83,123 @@ const WM_TRANSLATIONS = {
     addTitle: "Δημιουργία συστήματος ποτίσματος", addHelp: "Δώσε ένα όνομα. Τα entities και οι ρυθμίσεις Auto επιλέγονται αμέσως μετά.",
     cancel: "Ακύρωση", create: "Δημιουργία", percent: "%", hours: "ώρες",
     sensorStale: "λεπτά", systemsCount: "συστήματα", updated: "Ενημερώθηκε",
+    help: "Βοήθεια", close: "Κλείσιμο",
+  },
+};
+
+const WM_HELP_LABELS = {
+  mode: "mode", base_duration: "baseDuration", conflict_duration: "conflictDuration",
+  dry_threshold: "dryThreshold", wet_threshold: "wetThreshold",
+  weather_sensitivity: "weatherSensitivity", sensor_max_age_minutes: "maxSensorAge",
+  sensor_failure: "failureMode", exposure: "exposure", rain_reach_percent: "rainReach",
+  measured_rain_threshold: "rainThreshold", minimum_duration: "minDuration",
+  maximum_duration: "maxDuration", minimum_interval_hours: "minimumInterval",
+  soak_cycles: "soakCycles", soak_pause_minutes: "soakPause", valve_entity: "valve",
+  weather_entity: "weather", moisture_sensor_1: "moisture1", moisture_sensor_2: "moisture2",
+  rain_sensor: "rain", flow_sensor: "flow", flow_minimum: "flowMinimum",
+  flow_maximum: "flowMaximum", flow_grace_seconds: "flowGrace",
+};
+
+const WM_HELP = {
+  mode: {
+    el: "Manual: το προγραμματισμένο και το άμεσο πότισμα χρησιμοποιούν τη σταθερή Διάρκεια Manual. Δεν λαμβάνονται υπόψη υγρασία χώματος, καιρός ή βροχή. Auto: πριν ανοίξει η βάνα, το σύστημα ελέγχει τους αισθητήρες υγρασίας, τον καιρό, τη μετρημένη βροχή και τα όρια ασφαλείας. Μπορεί να μειώσει ή να αυξήσει τη διάρκεια ή να παραλείψει εντελώς το πότισμα. Το κουμπί «Πότισμα τώρα» εκτελεί πάντα τη χειροκίνητη διάρκεια.",
+    en: "Manual: scheduled and immediate watering use the fixed Manual duration. Soil moisture, weather and rain are ignored. Auto: before opening the valve, the system evaluates soil sensors, current weather, measured rain and safety limits. It may shorten, extend or completely skip watering. The Run now button always uses the manual duration.",
+  },
+  base_duration: {
+    el: "Ο βασικός χρόνος που συνήθως χρειάζεται το συγκεκριμένο σύστημα για να μετατρέψει το χώμα από στεγνό σε σωστά υγρό. Είναι η αρχική διάρκεια του Auto και στη συνέχεια διορθώνεται από τις μετρήσεις και τον καιρό.",
+    en: "The usual time this irrigation system needs to bring dry soil to a properly moist level. Auto starts from this duration and then adjusts it using sensor and weather data.",
+  },
+  conflict_duration: {
+    el: "Η σύντομη διάρκεια ασφαλείας όταν ο ένας αισθητήρας δείχνει στεγνό χώμα και ο άλλος υγρό. Ποτίζει λίγο ώστε να προστατεύσει την πιο στεγνή γλάστρα χωρίς να υπερποτίσει την ήδη υγρή.",
+    en: "The short safety duration used when one soil sensor is dry and the other is wet. It protects the drier pot without heavily watering the pot that is already moist.",
+  },
+  dry_threshold: {
+    el: "Κάτω από αυτό το ποσοστό το χώμα θεωρείται στεγνό. Ρύθμισέ το σύμφωνα με τη βαθμονόμηση των αισθητήρων και τις ανάγκες των φυτών σου.",
+    en: "Below this percentage the soil is considered dry. Set it according to your sensor calibration and the needs of your plants.",
+  },
+  wet_threshold: {
+    el: "Σε αυτό το ποσοστό ή υψηλότερα το χώμα θεωρείται αρκετά υγρό και το Auto παραλείπει το πότισμα. Πρέπει να είναι μεγαλύτερο από το Όριο στεγνού.",
+    en: "At or above this percentage the soil is considered sufficiently wet and Auto skips watering. It must be higher than the dry threshold.",
+  },
+  weather_sensitivity: {
+    el: "Ορίζει πόσο έντονα ο τρέχων καιρός επηρεάζει τη διάρκεια. 0% αγνοεί τον καιρό, 100% εφαρμόζει τη μέγιστη διόρθωση. Ο καιρός είναι διορθωτικός παράγοντας και δεν αποδεικνύει ότι έβρεξε στις γλάστρες.",
+    en: "Controls how strongly current weather affects duration. 0% ignores weather and 100% applies the maximum correction. Weather is only an adjustment and does not prove that rain reached the pots.",
+  },
+  sensor_max_age_minutes: {
+    el: "Η μέγιστη ηλικία μιας μέτρησης υγρασίας για να θεωρείται αξιόπιστη. Παλαιότερη μέτρηση χαρακτηρίζεται μη διαθέσιμη και εφαρμόζεται η ρύθμιση αποτυχίας αισθητήρων.",
+    en: "The maximum age of a soil-moisture reading before it is considered unreliable. Older readings are treated as unavailable and the sensor-failure rule is applied.",
+  },
+  sensor_failure: {
+    el: "Καθορίζει τι θα γίνει όταν κανένας αισθητήρας υγρασίας δεν δίνει έγκυρη, πρόσφατη μέτρηση. «Παράλειψη» δεν ποτίζει. «Χρήση βασικής διάρκειας» ποτίζει με τον βασικό χρόνο, μέσα στα όρια ασφαλείας.",
+    en: "Controls what happens when neither soil sensor provides a valid recent reading. Skip watering does not run. Use base duration waters for the configured base time within the safety limits.",
+  },
+  exposure: {
+    el: "Δηλώνει αν οι γλάστρες δέχονται τη βροχή. Εκτεθειμένο: πλήρης επίδραση. Μερικώς στεγασμένο: μειωμένη επίδραση. Στεγασμένο: η βροχή θεωρείται ότι δεν φτάνει στις γλάστρες.",
+    en: "Describes whether rain reaches the pots. Exposed: full effect. Partly covered: reduced effect. Covered: rain is treated as not reaching the pots.",
+  },
+  rain_reach_percent: {
+    el: "Επιπλέον διόρθωση για το ποσοστό της μετρημένης βροχής που πραγματικά φτάνει στις γλάστρες. Παράδειγμα: 50% σημαίνει ότι από 10 mm βροχής υπολογίζονται μόνο 5 mm.",
+    en: "Additional correction for the proportion of measured rain that actually reaches the pots. For example, 50% means only 5 mm is counted from 10 mm of measured rain.",
+  },
+  measured_rain_threshold: {
+    el: "Αν η βροχή που υπολογίζεται ότι έφτασε στις γλάστρες είναι ίση ή μεγαλύτερη από αυτό το όριο, το Auto παραλείπει το πότισμα.",
+    en: "If the rain calculated to have reached the pots is equal to or above this limit, Auto skips watering.",
+  },
+  minimum_duration: {
+    el: "Η μικρότερη διάρκεια που επιτρέπεται να επιλέξει το Auto όταν αποφασίσει ότι χρειάζεται πότισμα. Δεν επηρεάζει τις αποφάσεις πλήρους παράλειψης.",
+    en: "The shortest duration Auto may select after deciding that watering is needed. It does not affect decisions that skip watering entirely.",
+  },
+  maximum_duration: {
+    el: "Το ανώτατο όριο διάρκειας που δεν επιτρέπεται να ξεπεράσει το Auto, ακόμη και αν το χώμα είναι πολύ στεγνό ή ο καιρός αυξάνει την ανάγκη.",
+    en: "The maximum duration Auto may use, even when the soil is very dry or weather conditions increase demand.",
+  },
+  minimum_interval_hours: {
+    el: "Ο ελάχιστος χρόνος που πρέπει να περάσει από το προηγούμενο πότισμα πριν επιτραπεί νέο αυτόματο πότισμα. Προστατεύει από επαναλαμβανόμενες εκκινήσεις.",
+    en: "The minimum time that must pass after the previous run before another automatic watering is allowed. It prevents repeated runs.",
+  },
+  soak_cycles: {
+    el: "Χωρίζει τη συνολική διάρκεια σε μικρότερους κύκλους. Χρήσιμο όταν το χώμα απορροφά αργά ή το νερό τείνει να ξεχειλίζει από τη γλάστρα.",
+    en: "Splits the total duration into shorter watering cycles. Useful when soil absorbs water slowly or water tends to overflow the pot.",
+  },
+  soak_pause_minutes: {
+    el: "Ο χρόνος αναμονής ανάμεσα στους κύκλους, ώστε το νερό να προλάβει να απορροφηθεί. Δεν προσμετράται στην πραγματική διάρκεια που η βάνα είναι ανοιχτή.",
+    en: "The waiting time between cycles so water can soak into the soil. It is not counted as actual valve-open watering time.",
+  },
+  valve_entity: {
+    el: "Το entity που ανοίγει και κλείνει το νερό. Δέχεται valve, switch ή input_boolean. Είναι υποχρεωτικό για να εκτελεστεί πότισμα.",
+    en: "The entity that opens and closes the water supply. It may be a valve, switch or input_boolean and is required to run watering.",
+  },
+  weather_entity: {
+    el: "Το weather entity του Home Assistant από το οποίο διαβάζονται η τρέχουσα κατάσταση και η θερμοκρασία. Χρησιμοποιείται μόνο ως διόρθωση της διάρκειας στο Auto.",
+    en: "The Home Assistant weather entity used for current conditions and temperature. Auto uses it only to adjust watering duration.",
+  },
+  moisture_sensor_1: {
+    el: "Ο πρώτος αισθητήρας υγρασίας χώματος. Πρέπει να επιστρέφει αριθμητική τιμή ποσοστού. Τοποθέτησέ τον σε αντιπροσωπευτική γλάστρα και όχι ακριβώς δίπλα στον σταλάκτη.",
+    en: "The first soil-moisture sensor. It must provide a numeric percentage. Place it in a representative pot and not directly beside the dripper.",
+  },
+  moisture_sensor_2: {
+    el: "Ο δεύτερος ανεξάρτητος αισθητήρας υγρασίας. Επιτρέπει στο σύστημα να εντοπίζει άνισο πότισμα. Αν διαφωνεί με τον πρώτο, χρησιμοποιείται η σύντομη διάρκεια ασφαλείας.",
+    en: "The second independent soil-moisture sensor. It helps detect uneven watering. If it disagrees with the first sensor, the short safety duration is used.",
+  },
+  rain_sensor: {
+    el: "Αριθμητικό sensor entity που δίνει τα πραγματικά χιλιοστά βροχής των τελευταίων 24 ωρών. Δεν είναι η πιθανότητα βροχής από την πρόγνωση.",
+    en: "A numeric sensor entity containing actual rain in millimetres over the last 24 hours. It is not the forecast rain probability.",
+  },
+  flow_sensor: {
+    el: "Προαιρετικός αισθητήρας τρέχουσας ροής νερού. Χρησιμοποιείται για ανίχνευση κλειστής παροχής, βουλώματος ή υπερβολικής ροής/διαρροής.",
+    en: "Optional current water-flow sensor used to detect a closed supply, blockage, excessive flow or a leak.",
+  },
+  flow_minimum: {
+    el: "Η χαμηλότερη αποδεκτή τιμή ροής αφού ανοίξει η βάνα. Χρησιμοποίησε την ίδια μονάδα που δίνει ο αισθητήρας. Κάτω από αυτήν το πότισμα σταματά ως αποτυχία.",
+    en: "The lowest acceptable flow after the valve opens. Use the same unit as the sensor. Below this value the run stops as a failure.",
+  },
+  flow_maximum: {
+    el: "Η υψηλότερη ασφαλής τιμή ροής, στην ίδια μονάδα με τον αισθητήρα. Μεγαλύτερη τιμή θεωρείται πιθανή διαρροή και το πότισμα διακόπτεται.",
+    en: "The highest safe flow value, using the sensor's unit. A higher reading is treated as a possible leak and watering is stopped.",
+  },
+  flow_grace_seconds: {
+    el: "Πόσα δευτερόλεπτα περιμένει το σύστημα μετά το άνοιγμα της βάνας πριν ελέγξει τη ροή. Δίνει χρόνο στη σωλήνωση να γεμίσει και στον αισθητήρα να ενημερωθεί.",
+    en: "How many seconds the system waits after opening the valve before checking flow. This allows the pipework to fill and the sensor to update.",
   },
 };
 
@@ -149,7 +269,7 @@ class WateringManagerPanel extends HTMLElement {
     return `
       <div class="app">
         <header>
-          <div class="brand"><ha-icon icon="mdi:sprinkler-variant"></ha-icon><div><h1>${this.t("app")}</h1><small>${this.state.systems.length} ${this.t("systemsCount")}</small></div></div>
+          <div class="brand"><ha-icon icon="mdi:sprinkler-variant"></ha-icon><div><h1>${this.t("app")} <span class="version-badge">v${WM_VERSION}</span></h1><small>${this.state.systems.length} ${this.t("systemsCount")}</small></div></div>
           <div class="header-actions">
             <select id="language" aria-label="${this.t("language")}"><option value="el" ${this.language === "el" ? "selected" : ""}>Ελληνικά</option><option value="en" ${this.language === "en" ? "selected" : ""}>English</option></select>
             <button class="icon" id="refresh" title="${this.t("refresh")}"><ha-icon icon="mdi:refresh"></ha-icon></button>
@@ -273,13 +393,14 @@ class WateringManagerPanel extends HTMLElement {
     return `<section class="card log-card"><div class="table-wrap"><table><thead><tr><th>${this.t("date")}</th><th>${this.t("status")}</th><th>${this.t("reason")}</th><th>${this.t("trigger")}</th><th>${this.t("planned")}</th><th>${this.t("actual")}</th></tr></thead><tbody>${rows.map((log) => `<tr><td>${this.formatDate(log.timestamp)}</td><td><span class="pill ${log.status}">${this.esc(log.status)}</span></td><td>${this.reason(log.reason)}</td><td>${this.esc(log.trigger)}</td><td>${log.planned_duration} ${this.t("minutes")}</td><td>${log.actual_duration == null ? "—" : `${log.actual_duration} ${this.t("minutes")}`}</td></tr>`).join("")}</tbody></table></div></section>`;
   }
 
-  input(name, label, value, type) { return `<div class="field"><label for="${name}">${label}</label><input id="${name}" name="${name}" type="${type}" value="${this.esc(value)}"></div>`; }
-  number(name, label, value, min, max, suffix) { return `<div class="field"><label for="${name}">${label}</label><div class="suffix"><input id="${name}" name="${name}" type="number" min="${min}" max="${max}" step="1" value="${this.esc(value)}"><span>${suffix}</span></div></div>`; }
+  fieldLabel(name, label) { return `<div class="field-label"><label for="${name}">${label}</label>${WM_HELP[name] ? `<button type="button" class="help-button" data-help="${name}" aria-label="${this.t("help")}: ${this.esc(label)}">!</button>` : ""}</div>`; }
+  input(name, label, value, type) { return `<div class="field">${this.fieldLabel(name, label)}<input id="${name}" name="${name}" type="${type}" value="${this.esc(value)}"></div>`; }
+  number(name, label, value, min, max, suffix) { return `<div class="field">${this.fieldLabel(name, label)}<div class="suffix"><input id="${name}" name="${name}" type="number" min="${min}" max="${max}" step="1" value="${this.esc(value)}"><span>${suffix}</span></div></div>`; }
   textarea(name, label, value) { return `<div class="field"><label for="${name}">${label}</label><textarea id="${name}" name="${name}" rows="3">${this.esc(value)}</textarea></div>`; }
-  selectField(name, label, value, options) { return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}">${options.map(([key,text]) => `<option value="${key}" ${key === value ? "selected" : ""}>${text}</option>`).join("")}</select></div>`; }
+  selectField(name, label, value, options) { return `<div class="field">${this.fieldLabel(name, label)}<select id="${name}" name="${name}">${options.map(([key,text]) => `<option value="${key}" ${key === value ? "selected" : ""}>${text}</option>`).join("")}</select></div>`; }
   entityField(name, label, value, domains) {
     const options = Object.values(this.hass.states).filter((state) => domains.includes(state.entity_id.split(".")[0])).sort((a,b) => this.entityName(a).localeCompare(this.entityName(b)));
-    return `<div class="field"><label for="${name}">${label}</label><select id="${name}" name="${name}"><option value="">— ${this.t("notConfigured")} —</option>${options.map((state) => `<option value="${state.entity_id}" ${state.entity_id === value ? "selected" : ""}>${this.esc(this.entityName(state))} · ${state.entity_id}</option>`).join("")}</select></div>`;
+    return `<div class="field">${this.fieldLabel(name, label)}<select id="${name}" name="${name}"><option value="">— ${this.t("notConfigured")} —</option>${options.map((state) => `<option value="${state.entity_id}" ${state.entity_id === value ? "selected" : ""}>${this.esc(this.entityName(state))} · ${state.entity_id}</option>`).join("")}</select></div>`;
   }
   entityName(state) { return state.attributes.friendly_name || state.entity_id; }
   entityState(id) { const state = id && this.hass.states[id]; if (!state || ["unknown","unavailable"].includes(state.state)) return null; const value = Number(state.state); return Number.isFinite(value) ? value : state.state; }
@@ -310,6 +431,21 @@ class WateringManagerPanel extends HTMLElement {
     this.shadowRoot.getElementById("delete")?.addEventListener("click", () => this.remove());
     this.shadowRoot.getElementById("run")?.addEventListener("click", () => this.run());
     this.shadowRoot.getElementById("stop")?.addEventListener("click", () => this.stop());
+    this.shadowRoot.querySelectorAll(".help-button").forEach((button) => button.addEventListener("click", () => this.showHelpDialog(button.dataset.help)));
+  }
+
+  showHelpDialog(key) {
+    const help = WM_HELP[key];
+    if (!help) return;
+    const dialog = document.createElement("dialog");
+    dialog.className = "wm-dialog help-dialog";
+    const title = this.t(WM_HELP_LABELS[key]);
+    dialog.innerHTML = `<section><div class="help-dialog-title"><span class="help-mark">!</span><h2>${this.esc(title)}</h2></div><p>${this.esc(help[this.language] || help.en)}</p><button type="button" class="primary help-close">${this.t("close")}</button></section>`;
+    this.shadowRoot.appendChild(dialog);
+    dialog.querySelector(".help-close").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("close", () => dialog.remove());
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+    dialog.showModal();
   }
 
   collectForm() {
@@ -375,12 +511,14 @@ class WateringManagerPanel extends HTMLElement {
 
   styles() {
     return `
-      :host{--wm-green:#39745b;--wm-green-soft:color-mix(in srgb,var(--wm-green) 12%,transparent);display:block;background:var(--primary-background-color);min-height:100vh;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,system-ui)}*{box-sizing:border-box}.app{min-height:100vh}header{height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:var(--card-background-color);border-bottom:1px solid var(--divider-color);position:sticky;top:0;z-index:5}.brand,.header-actions,.actions,.title-row{display:flex;align-items:center}.brand{gap:12px}.brand>ha-icon{color:var(--wm-green);--mdc-icon-size:32px}.brand h1{font-size:20px;margin:0}.brand small,.muted,.title-row p{color:var(--secondary-text-color)}.header-actions,.actions{gap:8px}button,select,input,textarea{font:inherit;color:inherit}button{border:1px solid var(--divider-color);background:var(--card-background-color);border-radius:10px;padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}button.primary{background:var(--wm-green);color:white;border-color:var(--wm-green)}button.danger{background:var(--error-color);color:white;border-color:var(--error-color)}button.icon{padding:10px}.danger-text{color:var(--error-color)}select,input,textarea{width:100%;background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:11px 12px;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--wm-green);box-shadow:0 0 0 2px var(--wm-green-soft)}.workspace{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1500px;margin:auto;min-height:calc(100vh - 76px)}aside{padding:24px 18px;border-right:1px solid var(--divider-color);background:var(--card-background-color)}aside>label,.field>label{display:block;font-size:12px;font-weight:650;margin:0 0 7px;color:var(--secondary-text-color)}aside nav{display:grid;gap:5px;margin-top:24px}aside nav button{justify-content:flex-start;border:0;background:transparent;padding:11px}aside nav button.active{background:var(--wm-green-soft);color:var(--wm-green)}.aside-status{margin-top:24px;padding:12px;border-top:1px solid var(--divider-color);display:flex;align-items:center;gap:8px;font-size:13px}.dot{width:9px;height:9px;background:#9ca3af;border-radius:50%}.dot.on{background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.12)}main{padding:28px;min-width:0}.title-row{justify-content:space-between;margin-bottom:24px;gap:16px}.title-row h2{font-size:26px;margin:0 0 4px}.title-row p{margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:14px;padding:20px;box-shadow:var(--ha-card-box-shadow,none)}.wide{grid-column:1/-1}.stat{display:flex;align-items:center;gap:16px}.stat>ha-icon{color:var(--wm-green);background:var(--wm-green-soft);padding:12px;border-radius:12px;box-sizing:content-box}.stat small,.stat strong{display:block}.stat strong{font-size:20px;margin-top:5px}.card h3{margin:0 0 18px}.reason{font-size:18px;margin:0}.info{display:flex;gap:12px;align-items:flex-start}.info ha-icon,.info-line ha-icon{color:var(--wm-green);flex:none}.info p{margin:0}.form-card{max-width:1000px}.fields{display:grid;gap:17px}.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}.field{margin-bottom:17px}.suffix{display:flex}.suffix input{border-radius:9px 0 0 9px}.suffix span{border:1px solid var(--divider-color);border-left:0;border-radius:0 9px 9px 0;padding:11px;background:var(--secondary-background-color);white-space:nowrap;color:var(--secondary-text-color)}.toggle{display:flex;align-items:center;gap:10px;margin:5px 0 22px}.toggle input{display:none}.toggle span{width:42px;height:24px;background:#9ca3af;border-radius:20px;position:relative}.toggle span:after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;background:white;border-radius:50%;transition:.2s}.toggle input:checked+span{background:var(--wm-green)}.toggle input:checked+span:after{left:21px}.days{display:flex;gap:8px;flex-wrap:wrap}.days input{display:none}.days span{display:flex;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--divider-color);border-radius:50%;cursor:pointer}.days input:checked+span{background:var(--wm-green);border-color:var(--wm-green);color:white}.info-line{display:flex;align-items:flex-start;gap:9px;padding:12px;margin:12px 0;background:var(--wm-green-soft);border-radius:10px;font-size:13px}.empty{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:var(--secondary-text-color)}.empty>ha-icon{--mdc-icon-size:60px;color:var(--wm-green)}.empty.compact{min-height:300px}.loading{min-height:60vh;display:grid;place-items:center}.log-card{padding:0;overflow:hidden}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--divider-color);font-size:13px}th{color:var(--secondary-text-color);background:var(--secondary-background-color)}.pill{padding:4px 8px;border-radius:20px;background:var(--secondary-background-color)}.pill.completed{color:#15803d;background:#dcfce7}.pill.failed{color:#b91c1c;background:#fee2e2}.toast{position:fixed;right:24px;bottom:24px;background:#1f2937;color:white;border-radius:10px;padding:13px 18px;opacity:0;transform:translateY(20px);pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1;transform:none}.toast.error{background:var(--error-color)}
+      :host{--wm-green:#39745b;--wm-green-soft:color-mix(in srgb,var(--wm-green) 12%,transparent);display:block;background:var(--primary-background-color);min-height:100vh;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,system-ui)}*{box-sizing:border-box}.app{min-height:100vh}header{height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:var(--card-background-color);border-bottom:1px solid var(--divider-color);position:sticky;top:0;z-index:5}.brand,.header-actions,.actions,.title-row{display:flex;align-items:center}.brand{gap:12px}.brand>ha-icon{color:var(--wm-green);--mdc-icon-size:32px}.brand h1{font-size:20px;margin:0;display:flex;align-items:center;gap:8px}.version-badge{font-size:10px;line-height:1;padding:4px 6px;border-radius:10px;background:var(--wm-green-soft);color:var(--wm-green);font-weight:700}.brand small,.muted,.title-row p{color:var(--secondary-text-color)}.header-actions,.actions{gap:8px}button,select,input,textarea{font:inherit;color:inherit}button{border:1px solid var(--divider-color);background:var(--card-background-color);border-radius:10px;padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}button.primary{background:var(--wm-green);color:white;border-color:var(--wm-green)}button.danger{background:var(--error-color);color:white;border-color:var(--error-color)}button.icon{padding:10px}.danger-text{color:var(--error-color)}select,input,textarea{width:100%;background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:11px 12px;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--wm-green);box-shadow:0 0 0 2px var(--wm-green-soft)}.workspace{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1500px;margin:auto;min-height:calc(100vh - 76px)}aside{padding:24px 18px;border-right:1px solid var(--divider-color);background:var(--card-background-color)}aside>label,.field>label,.field-label label{display:block;font-size:12px;font-weight:650;color:var(--secondary-text-color)}aside>label,.field>label{margin:0 0 7px}.field-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 7px}.help-button{width:30px;height:30px;min-width:30px;padding:0;border-radius:50%;border-color:color-mix(in srgb,var(--wm-green) 42%,var(--divider-color));color:var(--wm-green);font-size:14px;font-weight:800;background:var(--wm-green-soft)}.help-button:hover,.help-button:focus{background:var(--wm-green);color:#fff;outline:none}.help-dialog-title{display:flex;align-items:center;gap:12px}.help-dialog-title h2{margin:0}.help-mark{display:grid;place-items:center;width:34px;height:34px;min-width:34px;border-radius:50%;background:var(--wm-green);color:#fff;font-weight:800}.help-dialog section{padding:24px}.help-dialog p{line-height:1.6;white-space:pre-line;margin:18px 0 24px}.help-dialog .help-close{width:100%;min-height:44px}aside nav{display:grid;gap:5px;margin-top:24px}aside nav button{justify-content:flex-start;border:0;background:transparent;padding:11px}aside nav button.active{background:var(--wm-green-soft);color:var(--wm-green)}.aside-status{margin-top:24px;padding:12px;border-top:1px solid var(--divider-color);display:flex;align-items:center;gap:8px;font-size:13px}.dot{width:9px;height:9px;background:#9ca3af;border-radius:50%}.dot.on{background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.12)}main{padding:28px;min-width:0}.title-row{justify-content:space-between;margin-bottom:24px;gap:16px}.title-row h2{font-size:26px;margin:0 0 4px}.title-row p{margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:14px;padding:20px;box-shadow:var(--ha-card-box-shadow,none)}.wide{grid-column:1/-1}.stat{display:flex;align-items:center;gap:16px}.stat>ha-icon{color:var(--wm-green);background:var(--wm-green-soft);padding:12px;border-radius:12px;box-sizing:content-box}.stat small,.stat strong{display:block}.stat strong{font-size:20px;margin-top:5px}.card h3{margin:0 0 18px}.reason{font-size:18px;margin:0}.info{display:flex;gap:12px;align-items:flex-start}.info ha-icon,.info-line ha-icon{color:var(--wm-green);flex:none}.info p{margin:0}.form-card{max-width:1000px}.fields{display:grid;gap:17px}.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}.field{margin-bottom:17px}.suffix{display:flex}.suffix input{border-radius:9px 0 0 9px}.suffix span{border:1px solid var(--divider-color);border-left:0;border-radius:0 9px 9px 0;padding:11px;background:var(--secondary-background-color);white-space:nowrap;color:var(--secondary-text-color)}.toggle{display:flex;align-items:center;gap:10px;margin:5px 0 22px}.toggle input{display:none}.toggle span{width:42px;height:24px;background:#9ca3af;border-radius:20px;position:relative}.toggle span:after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;background:white;border-radius:50%;transition:.2s}.toggle input:checked+span{background:var(--wm-green)}.toggle input:checked+span:after{left:21px}.days{display:flex;gap:8px;flex-wrap:wrap}.days input{display:none}.days span{display:flex;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--divider-color);border-radius:50%;cursor:pointer}.days input:checked+span{background:var(--wm-green);border-color:var(--wm-green);color:white}.info-line{display:flex;align-items:flex-start;gap:9px;padding:12px;margin:12px 0;background:var(--wm-green-soft);border-radius:10px;font-size:13px}.empty{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:var(--secondary-text-color)}.empty>ha-icon{--mdc-icon-size:60px;color:var(--wm-green)}.empty.compact{min-height:300px}.loading{min-height:60vh;display:grid;place-items:center}.log-card{padding:0;overflow:hidden}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--divider-color);font-size:13px}th{color:var(--secondary-text-color);background:var(--secondary-background-color)}.pill{padding:4px 8px;border-radius:20px;background:var(--secondary-background-color)}.pill.completed{color:#15803d;background:#dcfce7}.pill.failed{color:#b91c1c;background:#fee2e2}.toast{position:fixed;right:24px;bottom:24px;background:#1f2937;color:white;border-radius:10px;padding:13px 18px;opacity:0;transform:translateY(20px);pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1;transform:none}.toast.error{background:var(--error-color)}
       dialog{border:0;border-radius:16px;background:var(--card-background-color);color:var(--primary-text-color);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.35);max-width:460px;width:calc(100% - 32px)}dialog::backdrop{background:rgba(0,0,0,.5)}dialog form{padding:24px}dialog h2{margin:0 0 8px}dialog p{color:var(--secondary-text-color);margin-bottom:20px}dialog label{display:grid;gap:7px;font-size:13px;font-weight:650}dialog form>div{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
-      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.toast{left:14px;right:14px;bottom:14px}}
+      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.version-badge{font-size:9px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.help-button{width:36px;height:36px;min-width:36px}.help-dialog{max-height:calc(100vh - 24px);overflow:auto}.help-dialog section{padding:20px}.toast{left:14px;right:14px;bottom:14px}}
       @media(max-width:450px){.stats{grid-template-columns:1fr}.header-actions select{max-width:105px}.brand>ha-icon{display:none}}
     `;
   }
 }
 
-customElements.define("watering-manager-panel", WateringManagerPanel);
+if (!customElements.get("watering-manager-panel")) {
+  customElements.define("watering-manager-panel", WateringManagerPanel);
+}
