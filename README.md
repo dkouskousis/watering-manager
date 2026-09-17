@@ -4,6 +4,8 @@ Watering Manager is a Home Assistant custom integration for managing multiple ir
 
 > Status: early development release. Test with supervision before relying on it unattended.
 
+Current development version: **0.1.3**
+
 ## Current features
 
 - Dedicated **Watering / Πότισμα** page in the Home Assistant sidebar.
