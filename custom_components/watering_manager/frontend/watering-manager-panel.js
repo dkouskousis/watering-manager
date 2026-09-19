@@ -1,4 +1,4 @@
-const WM_VERSION = "0.2.0";
+const WM_VERSION = "0.2.1";
 
 const WM_TRANSLATIONS = {
   en: {
@@ -49,7 +49,7 @@ const WM_TRANSLATIONS = {
     statisticsNote: "Air temperature, soil temperature and moisture averages use readings captured when watering was evaluated. Soil temperature is recorded for information only and never changes watering duration. Water volume is estimated from the configured flow sensor and is shown only for supported flow-rate units.",
     volumePartial: "Volume is based only on runs with available flow data.",
     emergencyRuntime: "Emergency maximum valve runtime", valveConfirmation: "Valve close confirmation delay", leakFlow: "Maximum flow after close",
-    notifications: "Notifications", notificationService: "Notification service", notifyFailures: "Notify failures", notifyWarnings: "Notify warnings", notifySuccess: "Notify successful runs", testNotification: "Test notification",
+    notifications: "Notifications", notificationService: "Notification destination", notifyFailures: "Failures and safety events", notifyWarnings: "Warnings and moisture verification", notifySuccess: "Successful watering", testNotification: "Test", recipientName: "Recipient name", addRecipient: "Add recipient", removeRecipient: "Remove recipient", noNotificationTargets: "No notification recipients configured.", notificationRecipientsHelp: "Each recipient can receive a different combination of events. Critical failures are always also shown in Home Assistant.", modernEntity: "Notify entities", legacyService: "Legacy notify services",
     postCheck: "Post-watering verification", postCheckEnabled: "Verify moisture after watering", postCheckDelay: "Verification delay", postCheckIncrease: "Minimum moisture increase",
     health: "System health", healthy: "Healthy", warning: "Needs attention", critical: "Critical", pendingChecks: "Pending checks", calibration: "Calibration", flowCalibration: "Calibrate flow", durationCalibration: "Calibrate dry-to-wet duration", applyResult: "Apply recommendation", calibrationRunning: "Calibration in progress", noCalibration: "No calibration result yet", samples: "samples", recommended: "Recommended", startCalibrationConfirm: "This test will open the valve. Make sure water can run safely. Continue?",
     diagnosticValve: "Valve", diagnosticMoisture1: "Moisture sensor 1", diagnosticMoisture2: "Moisture sensor 2", diagnosticSoilTemperature1: "Soil temperature 1", diagnosticSoilTemperature2: "Soil temperature 2", diagnosticWeather: "Weather", diagnosticRain: "Rain", diagnosticFlow: "Flow", diagnosticNotifications: "Notifications",
@@ -103,7 +103,7 @@ const WM_TRANSLATIONS = {
     statisticsNote: "Οι μέσες τιμές θερμοκρασίας αέρα, θερμοκρασίας χώματος και υγρασίας βασίζονται στις μετρήσεις που καταγράφηκαν όταν αξιολογήθηκε το πότισμα. Η θερμοκρασία χώματος είναι μόνο ενημερωτική και δεν αλλάζει ποτέ τη διάρκεια. Ο όγκος νερού είναι εκτίμηση από τον αισθητήρα ροής και εμφανίζεται μόνο για υποστηριζόμενες μονάδες ροής.",
     volumePartial: "Ο όγκος βασίζεται μόνο στα ποτίσματα με διαθέσιμα δεδομένα ροής.",
     emergencyRuntime: "Μέγιστος χρόνος έκτακτης διακοπής", valveConfirmation: "Αναμονή επιβεβαίωσης κλεισίματος", leakFlow: "Μέγιστη ροή μετά το κλείσιμο",
-    notifications: "Ειδοποιήσεις", notificationService: "Υπηρεσία ειδοποιήσεων", notifyFailures: "Ειδοποίηση αποτυχιών", notifyWarnings: "Ειδοποίηση προειδοποιήσεων", notifySuccess: "Ειδοποίηση επιτυχών ποτισμάτων", testNotification: "Δοκιμή ειδοποίησης",
+    notifications: "Ειδοποιήσεις", notificationService: "Προορισμός ειδοποιήσεων", notifyFailures: "Αποτυχίες και συμβάντα ασφαλείας", notifyWarnings: "Προειδοποιήσεις και έλεγχος υγρασίας", notifySuccess: "Επιτυχημένα ποτίσματα", testNotification: "Δοκιμή", recipientName: "Όνομα παραλήπτη", addRecipient: "Προσθήκη παραλήπτη", removeRecipient: "Αφαίρεση παραλήπτη", noNotificationTargets: "Δεν έχουν οριστεί παραλήπτες ειδοποιήσεων.", notificationRecipientsHelp: "Κάθε παραλήπτης μπορεί να λαμβάνει διαφορετικό συνδυασμό συμβάντων. Οι κρίσιμες αποτυχίες εμφανίζονται πάντα και μέσα στο Home Assistant.", modernEntity: "Notify entities", legacyService: "Παλαιότερα notify services",
     postCheck: "Έλεγχος μετά το πότισμα", postCheckEnabled: "Επαλήθευση αύξησης υγρασίας", postCheckDelay: "Καθυστέρηση ελέγχου", postCheckIncrease: "Ελάχιστη αύξηση υγρασίας",
     health: "Υγεία συστήματος", healthy: "Υγιές", warning: "Χρειάζεται προσοχή", critical: "Κρίσιμο", pendingChecks: "Έλεγχοι σε αναμονή", calibration: "Βαθμονόμηση", flowCalibration: "Βαθμονόμηση ροής", durationCalibration: "Βαθμονόμηση διάρκειας στεγνό → υγρό", applyResult: "Εφαρμογή πρότασης", calibrationRunning: "Η βαθμονόμηση εκτελείται", noCalibration: "Δεν υπάρχει ακόμη αποτέλεσμα βαθμονόμησης", samples: "δείγματα", recommended: "Προτεινόμενο", startCalibrationConfirm: "Η δοκιμή θα ανοίξει τη βάνα. Βεβαιώσου ότι το νερό μπορεί να τρέξει με ασφάλεια. Συνέχεια;",
     diagnosticValve: "Βάνα", diagnosticMoisture1: "Αισθητήρας υγρασίας 1", diagnosticMoisture2: "Αισθητήρας υγρασίας 2", diagnosticSoilTemperature1: "Θερμοκρασία χώματος 1", diagnosticSoilTemperature2: "Θερμοκρασία χώματος 2", diagnosticWeather: "Καιρός", diagnosticRain: "Βροχή", diagnosticFlow: "Ροή", diagnosticNotifications: "Ειδοποιήσεις",
@@ -251,8 +251,8 @@ const WM_HELP = {
     en: "Highest permitted flow reading after the valve closes. A higher value is treated as a possible leak. Uses the sensor's own unit.",
   },
   notification_service: {
-    el: "Το notify service που θα λαμβάνει ειδοποιήσεις, π.χ. notify.mobile_app_phone. Οι κρίσιμες προειδοποιήσεις εμφανίζονται επίσης μέσα στο Home Assistant.",
-    en: "The notify service that receives alerts, for example notify.mobile_app_phone. Critical warnings also appear inside Home Assistant.",
+    el: "Η συσκευή ή υπηρεσία που θα λαμβάνει τις ειδοποιήσεις του συγκεκριμένου παραλήπτη. Προτίμησε notify entity όταν υπάρχει. Υποστηρίζονται επίσης παλαιότερα services όπως notify.mobile_app_phone.",
+    en: "The device or service used for this recipient. Prefer a notify entity when available. Older services such as notify.mobile_app_phone are also supported.",
   },
   post_check_delay_minutes: {
     el: "Πόσο περιμένει μετά το πότισμα ώστε το νερό να διαχυθεί στο χώμα πριν ξαναδιαβάσει τους αισθητήρες.",
@@ -477,13 +477,8 @@ class WateringManagerPanel extends HTMLElement {
       ${this.number("flow_maximum", this.t("flowMaximum"), system.flow_maximum, 0, 10000, "")}
       ${this.number("flow_grace_seconds", this.t("flowGrace"), system.flow_grace_seconds, 1, 120, "sec")}
     </div></section>
-    <section class="card form-card notification-card"><h3>${this.t("notifications")}</h3><div class="fields two">
-      ${this.notificationField(system.notification_service)}
-    </div>
-    <label class="toggle"><input name="notify_failures" type="checkbox" ${system.notify_failures ? "checked" : ""}><span></span>${this.t("notifyFailures")}</label>
-    <label class="toggle"><input name="notify_warnings" type="checkbox" ${system.notify_warnings ? "checked" : ""}><span></span>${this.t("notifyWarnings")}</label>
-    <label class="toggle"><input name="notify_success" type="checkbox" ${system.notify_success ? "checked" : ""}><span></span>${this.t("notifySuccess")}</label>
-    ${this.isAdmin ? `<button type="button" id="test-notification"><ha-icon icon="mdi:bell-ring-outline"></ha-icon>${this.t("testNotification")}</button>` : ""}
+    <section class="card form-card notification-card"><div class="section-title"><div><h3>${this.t("notifications")}</h3><p class="muted">${this.t("notificationRecipientsHelp")}</p></div>${this.isAdmin ? `<button type="button" id="add-recipient"><ha-icon icon="mdi:account-plus-outline"></ha-icon>${this.t("addRecipient")}</button>` : ""}</div>
+      ${this.notificationRecipients(system.notification_targets || [])}
     </section></form>`;
   }
 
@@ -641,11 +636,28 @@ class WateringManagerPanel extends HTMLElement {
     const options = Object.values(this.hass.states).filter((state) => domains.includes(state.entity_id.split(".")[0])).sort((a,b) => this.entityName(a).localeCompare(this.entityName(b)));
     return `<div class="field">${this.fieldLabel(name, label)}<select id="${name}" name="${name}"><option value="">— ${this.t("notConfigured")} —</option>${options.map((state) => `<option value="${state.entity_id}" ${state.entity_id === value ? "selected" : ""}>${this.esc(this.entityName(state))} · ${state.entity_id}</option>`).join("")}</select></div>`;
   }
-  notificationField(value) {
-    const normalized = String(value || "").replace(/^notify\./, "");
-    const services = Object.keys(this.hass.services?.notify || {}).sort();
-    if (normalized && !services.includes(normalized)) services.unshift(normalized);
-    return `<div class="field">${this.fieldLabel("notification_service", this.t("notificationService"))}<select id="notification_service" name="notification_service"><option value="">— ${this.t("notConfigured")} —</option>${services.map((service) => `<option value="${service}" ${service === normalized ? "selected" : ""}>notify.${this.esc(service)}</option>`).join("")}</select></div>`;
+  notificationRecipients(targets) {
+    if (!targets.length) return `<div class="empty-notifications"><ha-icon icon="mdi:bell-off-outline"></ha-icon><span>${this.t("noNotificationTargets")}</span></div>`;
+    return `<div class="recipient-list">${targets.map((target, index) => `<section class="recipient-row" data-recipient-index="${index}">
+      <div class="recipient-head"><strong>${this.esc(target.name || `${this.t("recipientName")} ${index + 1}`)}</strong>${this.isAdmin ? `<button type="button" class="icon danger-text remove-recipient" data-index="${index}" title="${this.t("removeRecipient")}"><ha-icon icon="mdi:delete-outline"></ha-icon></button>` : ""}</div>
+      <div class="fields two">
+        <div class="field"><label for="recipient_name_${index}">${this.t("recipientName")}</label><input id="recipient_name_${index}" data-recipient-name value="${this.esc(target.name || "")}"></div>
+        <div class="field"><div class="field-label"><label for="recipient_destination_${index}">${this.t("notificationService")}</label><button type="button" class="help-button" data-help="notification_service" aria-label="${this.t("help")}: ${this.t("notificationService")}">!</button></div>${this.notificationDestinationSelect(index, target.destination)}</div>
+      </div>
+      <div class="recipient-events">
+        <label><input type="checkbox" data-recipient-event="failure" ${target.failure ? "checked" : ""}><span><ha-icon icon="mdi:alert-octagon-outline"></ha-icon>${this.t("notifyFailures")}</span></label>
+        <label><input type="checkbox" data-recipient-event="warning" ${target.warning ? "checked" : ""}><span><ha-icon icon="mdi:alert-outline"></ha-icon>${this.t("notifyWarnings")}</span></label>
+        <label><input type="checkbox" data-recipient-event="success" ${target.success ? "checked" : ""}><span><ha-icon icon="mdi:check-circle-outline"></ha-icon>${this.t("notifySuccess")}</span></label>
+      </div>
+      ${this.isAdmin ? `<button type="button" class="test-recipient" data-index="${index}"><ha-icon icon="mdi:bell-ring-outline"></ha-icon>${this.t("testNotification")}</button>` : ""}
+    </section>`).join("")}</div>`;
+  }
+  notificationDestinationSelect(index, selected) {
+    const entities = Object.values(this.hass.states).filter((state) => state.entity_id.startsWith("notify.")).sort((a,b) => this.entityName(a).localeCompare(this.entityName(b)));
+    const ignored = new Set(["notify", "persistent_notification", "send_message"]);
+    const services = Object.keys(this.hass.services?.notify || {}).filter((service) => !ignored.has(service)).sort();
+    const known = new Set([...entities.map((state) => `entity:${state.entity_id}`), ...services.map((service) => `service:notify.${service}`)]);
+    return `<select id="recipient_destination_${index}" data-recipient-destination><option value="">— ${this.t("notConfigured")} —</option>${selected && !known.has(selected) ? `<option value="${this.esc(selected)}" selected>${this.esc(selected.replace(/^(entity|service):/, ""))}</option>` : ""}${entities.length ? `<optgroup label="${this.t("modernEntity")}">${entities.map((state) => { const value = `entity:${state.entity_id}`; return `<option value="${value}" ${value === selected ? "selected" : ""}>${this.esc(this.entityName(state))} · ${state.entity_id}</option>`; }).join("")}</optgroup>` : ""}${services.length ? `<optgroup label="${this.t("legacyService")}">${services.map((service) => { const value = `service:notify.${service}`; return `<option value="${value}" ${value === selected ? "selected" : ""}>notify.${this.esc(service)}</option>`; }).join("")}</optgroup>` : ""}</select>`;
   }
   entityName(state) { return state.attributes.friendly_name || state.entity_id; }
   entityState(id) { const state = id && this.hass.states[id]; if (!state || ["unknown","unavailable"].includes(state.state)) return null; const value = Number(state.state); return Number.isFinite(value) ? value : state.state; }
@@ -682,7 +694,9 @@ class WateringManagerPanel extends HTMLElement {
     this.shadowRoot.getElementById("delete")?.addEventListener("click", () => this.remove());
     this.shadowRoot.getElementById("run")?.addEventListener("click", () => this.run());
     this.shadowRoot.getElementById("stop")?.addEventListener("click", () => this.stop());
-    this.shadowRoot.getElementById("test-notification")?.addEventListener("click", () => this.testNotification());
+    this.shadowRoot.getElementById("add-recipient")?.addEventListener("click", () => this.addRecipient());
+    this.shadowRoot.querySelectorAll(".remove-recipient").forEach((button) => button.addEventListener("click", () => this.removeRecipient(Number(button.dataset.index))));
+    this.shadowRoot.querySelectorAll(".test-recipient").forEach((button) => button.addEventListener("click", () => this.testNotification(Number(button.dataset.index))));
     this.shadowRoot.getElementById("calibrate-flow")?.addEventListener("click", () => this.startCalibration("flow"));
     this.shadowRoot.getElementById("calibrate-duration")?.addEventListener("click", () => this.startCalibration("duration"));
     this.shadowRoot.getElementById("apply-calibration")?.addEventListener("click", () => this.applyCalibration());
@@ -714,9 +728,13 @@ class WateringManagerPanel extends HTMLElement {
     }
     if (this.tab === "automatic") data.post_check_enabled = form.elements.post_check_enabled.checked;
     if (this.tab === "hardware") {
-      data.notify_failures = form.elements.notify_failures.checked;
-      data.notify_warnings = form.elements.notify_warnings.checked;
-      data.notify_success = form.elements.notify_success.checked;
+      data.notification_targets = [...form.querySelectorAll(".recipient-row")].map((row) => ({
+        name: row.querySelector("[data-recipient-name]").value.trim(),
+        destination: row.querySelector("[data-recipient-destination]").value,
+        failure: row.querySelector('[data-recipient-event="failure"]').checked,
+        warning: row.querySelector('[data-recipient-event="warning"]').checked,
+        success: row.querySelector('[data-recipient-event="success"]').checked,
+      }));
     }
     const numeric = ["manual_duration","base_duration","minimum_duration","maximum_duration","conflict_duration","dry_threshold","wet_threshold","sensor_max_age_minutes","rain_reach_percent","measured_rain_threshold","weather_sensitivity","minimum_interval_hours","soak_cycles","soak_pause_minutes","flow_minimum","flow_maximum","flow_grace_seconds","emergency_max_runtime","valve_confirmation_seconds","leak_flow_threshold","post_check_delay_minutes","post_check_min_increase","flow_calibration_seconds","duration_calibration_minutes","duration_calibration_wait_minutes"];
     numeric.forEach((key) => { if (key in data) data[key] = Number(data[key]); });
@@ -729,7 +747,8 @@ class WateringManagerPanel extends HTMLElement {
       Object.assign(this.system, updated);
       this.message(this.t("saved"));
       if (render) this.render();
-    } catch (error) { this.message(error.message || String(error), true); }
+      return true;
+    } catch (error) { this.message(error.message || String(error), true); return false; }
   }
 
   async run() {
@@ -738,17 +757,30 @@ class WateringManagerPanel extends HTMLElement {
     catch (error) { this.message(error.message || String(error), true); }
   }
   async stop() { try { await this.call("stop_system", {system_id:this.selectedId}); await this.loadState(); } catch (error) { this.message(error.message || String(error), true); } }
-  async testNotification() {
+  addRecipient() {
+    Object.assign(this.system, this.collectForm());
+    this.system.notification_targets = [...(this.system.notification_targets || []), {name:"",destination:"",failure:true,warning:true,success:false}];
+    this.render();
+  }
+  removeRecipient(index) {
+    Object.assign(this.system, this.collectForm());
+    this.system.notification_targets = (this.system.notification_targets || []).filter((_, itemIndex) => itemIndex !== index);
+    this.render();
+  }
+  async testNotification(index) {
     try {
-      await this.save(false);
-      await this.call("test_notification", {system_id:this.selectedId});
+      const values = this.collectForm();
+      const target = values.notification_targets?.[index];
+      if (!target?.destination || !target?.name) { this.message(this.t("notConfigured"), true); return; }
+      if (!(await this.save(false))) return;
+      await this.call("test_notification", {system_id:this.selectedId, destination:target.destination});
       this.message(this.t("testNotification"));
     } catch (error) { this.message(error.message || String(error), true); }
   }
   async startCalibration(kind) {
     if (!confirm(this.t("startCalibrationConfirm"))) return;
     try {
-      await this.save(false);
+      if (!(await this.save(false))) return;
       await this.call("start_calibration", {system_id:this.selectedId, kind});
       await this.loadState();
     } catch (error) { this.message(error.message || String(error), true); }
@@ -798,9 +830,9 @@ class WateringManagerPanel extends HTMLElement {
     return `
       :host{--wm-green:#39745b;--wm-green-soft:color-mix(in srgb,var(--wm-green) 12%,transparent);display:block;background:var(--primary-background-color);min-height:100vh;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,system-ui)}*{box-sizing:border-box}.app{min-height:100vh}header{height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:var(--card-background-color);border-bottom:1px solid var(--divider-color);position:sticky;top:0;z-index:5}.brand,.header-actions,.actions,.title-row{display:flex;align-items:center}.brand{gap:12px}.brand>ha-icon{color:var(--wm-green);--mdc-icon-size:32px}.brand h1{font-size:20px;margin:0;display:flex;align-items:center;gap:8px}.version-badge{font-size:10px;line-height:1;padding:4px 6px;border-radius:10px;background:var(--wm-green-soft);color:var(--wm-green);font-weight:700}.brand small,.muted,.title-row p{color:var(--secondary-text-color)}.header-actions,.actions{gap:8px}button,select,input,textarea{font:inherit;color:inherit}button{border:1px solid var(--divider-color);background:var(--card-background-color);border-radius:10px;padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}button.primary{background:var(--wm-green);color:white;border-color:var(--wm-green)}button.danger{background:var(--error-color);color:white;border-color:var(--error-color)}button.icon{padding:10px}.danger-text{color:var(--error-color)}select,input,textarea{width:100%;background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:11px 12px;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--wm-green);box-shadow:0 0 0 2px var(--wm-green-soft)}.workspace{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1500px;margin:auto;min-height:calc(100vh - 76px)}aside{padding:24px 18px;border-right:1px solid var(--divider-color);background:var(--card-background-color)}aside>label,.field>label,.field-label label{display:block;font-size:12px;font-weight:650;color:var(--secondary-text-color)}aside>label,.field>label{margin:0 0 7px}.field-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 7px}.help-button{width:30px;height:30px;min-width:30px;padding:0;border-radius:50%;border-color:color-mix(in srgb,var(--wm-green) 42%,var(--divider-color));color:var(--wm-green);font-size:14px;font-weight:800;background:var(--wm-green-soft)}.help-button:hover,.help-button:focus{background:var(--wm-green);color:#fff;outline:none}.help-dialog-title{display:flex;align-items:center;gap:12px}.help-dialog-title h2{margin:0}.help-mark{display:grid;place-items:center;width:34px;height:34px;min-width:34px;border-radius:50%;background:var(--wm-green);color:#fff;font-weight:800}.help-dialog section{padding:24px}.help-dialog p{line-height:1.6;white-space:pre-line;margin:18px 0 24px}.help-dialog .help-close{width:100%;min-height:44px}aside nav{display:grid;gap:5px;margin-top:24px}aside nav button{justify-content:flex-start;border:0;background:transparent;padding:11px}aside nav button.active{background:var(--wm-green-soft);color:var(--wm-green)}.aside-status{margin-top:24px;padding:12px;border-top:1px solid var(--divider-color);display:flex;align-items:center;gap:8px;font-size:13px}.dot{width:9px;height:9px;background:#9ca3af;border-radius:50%}.dot.on{background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.12)}main{padding:28px;min-width:0}.title-row{justify-content:space-between;margin-bottom:24px;gap:16px}.title-row h2{font-size:26px;margin:0 0 4px}.title-row p{margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:14px;padding:20px;box-shadow:var(--ha-card-box-shadow,none)}.wide{grid-column:1/-1}.stat{display:flex;align-items:center;gap:16px}.stat>ha-icon{color:var(--wm-green);background:var(--wm-green-soft);padding:12px;border-radius:12px;box-sizing:content-box}.stat small,.stat strong{display:block}.stat strong{font-size:20px;margin-top:5px}.card h3{margin:0 0 18px}.reason{font-size:18px;margin:0}.info{display:flex;gap:12px;align-items:flex-start}.info ha-icon,.info-line ha-icon{color:var(--wm-green);flex:none}.info p{margin:0}.form-card{max-width:1000px}.fields{display:grid;gap:17px}.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}.field{margin-bottom:17px}.suffix{display:flex}.suffix input{border-radius:9px 0 0 9px}.suffix span{border:1px solid var(--divider-color);border-left:0;border-radius:0 9px 9px 0;padding:11px;background:var(--secondary-background-color);white-space:nowrap;color:var(--secondary-text-color)}.toggle{display:flex;align-items:center;gap:10px;margin:5px 0 22px}.toggle input{display:none}.toggle span{width:42px;height:24px;background:#9ca3af;border-radius:20px;position:relative}.toggle span:after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;background:white;border-radius:50%;transition:.2s}.toggle input:checked+span{background:var(--wm-green)}.toggle input:checked+span:after{left:21px}.days{display:flex;gap:8px;flex-wrap:wrap}.days input{display:none}.days span{display:flex;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--divider-color);border-radius:50%;cursor:pointer}.days input:checked+span{background:var(--wm-green);border-color:var(--wm-green);color:white}.info-line{display:flex;align-items:flex-start;gap:9px;padding:12px;margin:12px 0;background:var(--wm-green-soft);border-radius:10px;font-size:13px}.empty{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:var(--secondary-text-color)}.empty>ha-icon{--mdc-icon-size:60px;color:var(--wm-green)}.empty.compact{min-height:300px}.loading{min-height:60vh;display:grid;place-items:center}.log-card{padding:0;overflow:hidden}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--divider-color);font-size:13px}th{color:var(--secondary-text-color);background:var(--secondary-background-color)}.pill{padding:4px 8px;border-radius:20px;background:var(--secondary-background-color)}.pill.completed{color:#15803d;background:#dcfce7}.pill.failed{color:#b91c1c;background:#fee2e2}.toast{position:fixed;right:24px;bottom:24px;background:#1f2937;color:white;border-radius:10px;padding:13px 18px;opacity:0;transform:translateY(20px);pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1;transform:none}.toast.error{background:var(--error-color)}
       .statistics-view{display:grid;gap:16px}.range-tabs{display:flex;gap:6px;padding:4px;background:var(--secondary-background-color);border-radius:12px;width:max-content;max-width:100%}.range-tabs button{border:0;background:transparent;min-width:92px}.range-tabs button.active{background:var(--wm-green);color:#fff}.chart-card{overflow:hidden}.chart-scroll{overflow-x:auto;padding:4px 0 8px}.bar-chart{height:220px;display:flex;align-items:stretch;gap:8px;min-width:max-content}.bar-column{width:38px;display:grid;grid-template-rows:22px 1fr 22px;align-items:end;text-align:center}.bar-column>span{font-size:10px;color:var(--secondary-text-color);align-self:center}.bar-track{height:150px;width:22px;margin:auto;background:var(--secondary-background-color);border-radius:7px;overflow:hidden;display:flex;align-items:flex-end}.bar-track i{display:block;width:100%;background:var(--wm-green);border-radius:7px 7px 0 0;min-height:0}.bar-column small{font-size:11px;color:var(--secondary-text-color);overflow:hidden;text-overflow:ellipsis}.statistics-view>.info-line{margin:0}.statistics-view .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
-      .diagnostics-view{display:grid;gap:16px;max-width:1000px}.health-summary{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px}.health-summary>ha-icon{--mdc-icon-size:34px}.health-summary small,.health-summary strong,.health-row small,.health-row strong,.calibration-result small{display:block}.health-summary strong{font-size:20px}.health-summary.healthy>ha-icon,.health-row.ok>ha-icon{color:#22a05a}.health-summary.warning>ha-icon,.health-row.warning>ha-icon{color:#d08a00}.health-summary.critical>ha-icon,.health-row.error>ha-icon{color:var(--error-color)}.health-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.health-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--secondary-background-color);border-radius:10px}.health-row small,.calibration-result small,.calibration-progress small{margin-top:3px;color:var(--secondary-text-color)}.calibration-actions{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}.calibration-result,.calibration-progress{display:flex;align-items:center;gap:14px;padding:14px;border-radius:10px;background:var(--wm-green-soft)}.calibration-result{justify-content:space-between;flex-wrap:wrap}.notification-card{margin-top:16px}.pill.warning{color:#a16207;background:#fef3c7}
+      .diagnostics-view{display:grid;gap:16px;max-width:1000px}.health-summary{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px}.health-summary>ha-icon{--mdc-icon-size:34px}.health-summary small,.health-summary strong,.health-row small,.health-row strong,.calibration-result small{display:block}.health-summary strong{font-size:20px}.health-summary.healthy>ha-icon,.health-row.ok>ha-icon{color:#22a05a}.health-summary.warning>ha-icon,.health-row.warning>ha-icon{color:#d08a00}.health-summary.critical>ha-icon,.health-row.error>ha-icon{color:var(--error-color)}.health-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.health-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--secondary-background-color);border-radius:10px}.health-row small,.calibration-result small,.calibration-progress small{margin-top:3px;color:var(--secondary-text-color)}.calibration-actions{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}.calibration-result,.calibration-progress{display:flex;align-items:center;gap:14px;padding:14px;border-radius:10px;background:var(--wm-green-soft)}.calibration-result{justify-content:space-between;flex-wrap:wrap}.notification-card{margin-top:16px}.section-title,.recipient-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.section-title h3{margin-bottom:4px}.section-title p{margin:0 0 18px}.recipient-list{display:grid;gap:14px}.recipient-row{border:1px solid var(--divider-color);border-radius:12px;padding:16px;background:var(--secondary-background-color)}.recipient-head{align-items:center;margin-bottom:14px}.recipient-events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}.recipient-events input{display:none}.recipient-events span{min-height:54px;display:flex;align-items:center;justify-content:center;gap:7px;text-align:center;padding:9px;border:1px solid var(--divider-color);border-radius:9px;background:var(--card-background-color);cursor:pointer;font-size:12px}.recipient-events input:checked+span{background:var(--wm-green-soft);border-color:var(--wm-green);color:var(--wm-green);font-weight:650}.empty-notifications{display:flex;align-items:center;gap:10px;padding:18px;border:1px dashed var(--divider-color);border-radius:10px;color:var(--secondary-text-color)}.pill.warning{color:#a16207;background:#fef3c7}
       dialog{border:0;border-radius:16px;background:var(--card-background-color);color:var(--primary-text-color);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.35);max-width:460px;width:calc(100% - 32px)}dialog::backdrop{background:rgba(0,0,0,.5)}dialog form{padding:24px}dialog h2{margin:0 0 8px}dialog p{color:var(--secondary-text-color);margin-bottom:20px}dialog label{display:grid;gap:7px;font-size:13px;font-weight:650}dialog form>div{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
-      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.version-badge{font-size:9px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two,.health-list{grid-template-columns:1fr}.stats,.statistics-view .stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.help-button{width:36px;height:36px;min-width:36px}.help-dialog{max-height:calc(100vh - 24px);overflow:auto}.help-dialog section{padding:20px}.range-tabs{width:100%}.range-tabs button{min-width:0;flex:1;padding:10px 8px}.health-summary{grid-template-columns:auto 1fr}.health-summary>span{grid-column:1/-1}.calibration-actions button{width:100%}.toast{left:14px;right:14px;bottom:14px}}
+      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.version-badge{font-size:9px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two,.health-list{grid-template-columns:1fr}.stats,.statistics-view .stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.help-button{width:36px;height:36px;min-width:36px}.help-dialog{max-height:calc(100vh - 24px);overflow:auto}.help-dialog section{padding:20px}.range-tabs{width:100%}.range-tabs button{min-width:0;flex:1;padding:10px 8px}.health-summary{grid-template-columns:auto 1fr}.health-summary>span{grid-column:1/-1}.calibration-actions button{width:100%}.section-title{display:grid}.section-title>button{width:100%}.recipient-events{grid-template-columns:1fr}.recipient-events span{justify-content:flex-start}.test-recipient{width:100%}.toast{left:14px;right:14px;bottom:14px}}
       @media(max-width:450px){.stats{grid-template-columns:1fr}.header-actions select{max-width:105px}.brand>ha-icon{display:none}}
     `;
   }
