@@ -1,4 +1,4 @@
-const WM_VERSION = "0.1.4";
+const WM_VERSION = "0.1.5";
 
 const WM_TRANSLATIONS = {
   en: {
@@ -11,7 +11,7 @@ const WM_TRANSLATIONS = {
     modeHelp: "Manual always uses the fixed duration. Auto decides whether to water and adjusts the duration using soil moisture, weather, rain and safety limits.",
     days: "Watering days", startTime: "Start time", manualDuration: "Manual duration",
     minutes: "minutes", valve: "Valve or switch", moisture1: "Soil moisture sensor 1",
-    moisture2: "Soil moisture sensor 2", weather: "Weather entity",
+    moisture2: "Soil moisture sensor 2", soilTemperature: "Soil temperature sensor", weather: "Weather entity",
     rain: "Measured rain (last 24h)", flow: "Flow sensor (optional)",
     flowMinimum: "Minimum safe flow", flowMaximum: "Maximum safe flow", flowGrace: "Flow check delay",
     entityHelp: "Choose an existing Home Assistant entity. The system never creates or renames your hardware entities.",
@@ -43,10 +43,10 @@ const WM_TRANSLATIONS = {
     sensorStale: "minutes", systemsCount: "systems", updated: "Updated",
     help: "Help", close: "Close", day: "Day", week: "Week", month: "Month",
     totalWateringTime: "Total watering time", totalWaterVolume: "Total water volume",
-    averageTemperature: "Average temperature", averageMoisture: "Average soil moisture",
+    averageTemperature: "Average air temperature", averageSoilTemperature: "Average soil temperature", averageMoisture: "Average soil moisture",
     wateringRuns: "Watering runs", successfulRuns: "Completed", skippedRuns: "Skipped",
     failedRuns: "Failed", durationChart: "Watering time by period", noStatistics: "No watering data for this period.",
-    statisticsNote: "Temperature and moisture averages use readings captured when watering was evaluated. Water volume is estimated from the configured flow sensor and is shown only for supported flow-rate units.",
+    statisticsNote: "Air temperature, soil temperature and moisture averages use readings captured when watering was evaluated. Soil temperature is recorded for information only and never changes watering duration. Water volume is estimated from the configured flow sensor and is shown only for supported flow-rate units.",
     volumePartial: "Volume is based only on runs with available flow data.",
   },
   el: {
@@ -59,7 +59,7 @@ const WM_TRANSLATIONS = {
     modeHelp: "Το Manual χρησιμοποιεί πάντα τη σταθερή διάρκεια. Το Auto αποφασίζει αν χρειάζεται πότισμα και προσαρμόζει τη διάρκεια από την υγρασία χώματος, τον καιρό, τη βροχή και τα όρια ασφαλείας.",
     days: "Ημέρες ποτίσματος", startTime: "Ώρα έναρξης", manualDuration: "Διάρκεια Manual",
     minutes: "λεπτά", valve: "Βάνα ή διακόπτης", moisture1: "Αισθητήρας υγρασίας χώματος 1",
-    moisture2: "Αισθητήρας υγρασίας χώματος 2", weather: "Entity καιρού",
+    moisture2: "Αισθητήρας υγρασίας χώματος 2", soilTemperature: "Αισθητήρας θερμοκρασίας χώματος", weather: "Entity καιρού",
     rain: "Μετρημένη βροχή τελευταίου 24ώρου", flow: "Αισθητήρας ροής (προαιρετικός)",
     flowMinimum: "Ελάχιστη ασφαλής ροή", flowMaximum: "Μέγιστη ασφαλής ροή", flowGrace: "Καθυστέρηση ελέγχου ροής",
     entityHelp: "Επίλεξε υπάρχον entity του Home Assistant. Η εφαρμογή δεν δημιουργεί ούτε μετονομάζει τα entities του εξοπλισμού.",
@@ -91,10 +91,10 @@ const WM_TRANSLATIONS = {
     sensorStale: "λεπτά", systemsCount: "συστήματα", updated: "Ενημερώθηκε",
     help: "Βοήθεια", close: "Κλείσιμο", day: "Ημέρα", week: "Εβδομάδα", month: "Μήνας",
     totalWateringTime: "Συνολικός χρόνος ποτίσματος", totalWaterVolume: "Συνολικός όγκος νερού",
-    averageTemperature: "Μέση θερμοκρασία", averageMoisture: "Μέση υγρασία χώματος",
+    averageTemperature: "Μέση θερμοκρασία αέρα", averageSoilTemperature: "Μέση θερμοκρασία χώματος", averageMoisture: "Μέση υγρασία χώματος",
     wateringRuns: "Ποτίσματα", successfulRuns: "Ολοκληρωμένα", skippedRuns: "Παραλείψεις",
     failedRuns: "Αποτυχίες", durationChart: "Χρόνος ποτίσματος ανά περίοδο", noStatistics: "Δεν υπάρχουν δεδομένα ποτίσματος για αυτή την περίοδο.",
-    statisticsNote: "Οι μέσες τιμές θερμοκρασίας και υγρασίας βασίζονται στις μετρήσεις που καταγράφηκαν όταν αξιολογήθηκε το πότισμα. Ο όγκος νερού είναι εκτίμηση από τον αισθητήρα ροής και εμφανίζεται μόνο για υποστηριζόμενες μονάδες ροής.",
+    statisticsNote: "Οι μέσες τιμές θερμοκρασίας αέρα, θερμοκρασίας χώματος και υγρασίας βασίζονται στις μετρήσεις που καταγράφηκαν όταν αξιολογήθηκε το πότισμα. Η θερμοκρασία χώματος είναι μόνο ενημερωτική και δεν αλλάζει ποτέ τη διάρκεια. Ο όγκος νερού είναι εκτίμηση από τον αισθητήρα ροής και εμφανίζεται μόνο για υποστηριζόμενες μονάδες ροής.",
     volumePartial: "Ο όγκος βασίζεται μόνο στα ποτίσματα με διαθέσιμα δεδομένα ροής.",
   },
 };
@@ -107,7 +107,7 @@ const WM_HELP_LABELS = {
   measured_rain_threshold: "rainThreshold", minimum_duration: "minDuration",
   maximum_duration: "maxDuration", minimum_interval_hours: "minimumInterval",
   soak_cycles: "soakCycles", soak_pause_minutes: "soakPause", valve_entity: "valve",
-  weather_entity: "weather", moisture_sensor_1: "moisture1", moisture_sensor_2: "moisture2",
+  weather_entity: "weather", moisture_sensor_1: "moisture1", moisture_sensor_2: "moisture2", soil_temperature_sensor: "soilTemperature",
   rain_sensor: "rain", flow_sensor: "flow", flow_minimum: "flowMinimum",
   flow_maximum: "flowMaximum", flow_grace_seconds: "flowGrace",
 };
@@ -192,6 +192,10 @@ const WM_HELP = {
   moisture_sensor_2: {
     el: "Ο δεύτερος ανεξάρτητος αισθητήρας υγρασίας. Επιτρέπει στο σύστημα να εντοπίζει άνισο πότισμα. Αν διαφωνεί με τον πρώτο, χρησιμοποιείται η σύντομη διάρκεια ασφαλείας.",
     en: "The second independent soil-moisture sensor. It helps detect uneven watering. If it disagrees with the first sensor, the short safety duration is used.",
+  },
+  soil_temperature_sensor: {
+    el: "Προαιρετικό sensor entity που δίνει τη θερμοκρασία του χώματος. Εμφανίζεται στην Επισκόπηση και υπολογίζεται στα Στατιστικά. Η τιμή καταγράφεται μόνο ενημερωτικά και δεν επηρεάζει με κανέναν τρόπο την απόφαση ή τη διάρκεια ποτίσματος.",
+    en: "Optional sensor entity that reports soil temperature. It is displayed in Overview and included in Statistics. The reading is recorded for information only and never affects the watering decision or duration.",
   },
   rain_sensor: {
     el: "Αριθμητικό sensor entity που δίνει τα πραγματικά χιλιοστά βροχής των τελευταίων 24 ωρών. Δεν είναι η πιθανότητα βροχής από την πρόγνωση.",
@@ -335,9 +339,11 @@ class WateringManagerPanel extends HTMLElement {
   overview(system) {
     const running = this.state.active_system_ids.includes(system.id);
     const moisture = [system.moisture_sensor_1, system.moisture_sensor_2].map((id) => this.entityState(id));
+    const soilTemperature = this.entityValueWithUnit(system.soil_temperature_sensor);
     const weather = this.weatherSummary(system.weather_entity);
     return `<div class="grid stats">
       ${this.stat("mdi:water-percent", this.t("sensorValues"), moisture.map((v) => v == null ? "—" : `${v}%`).join(" / "))}
+      ${this.stat("mdi:thermometer-lines", this.t("soilTemperature"), soilTemperature)}
       ${this.stat(weather.icon, this.t("weather"), weather.text)}
       ${this.stat("mdi:clock-outline", this.t("lastRun"), system.last_run_at ? this.formatDate(system.last_run_at) : "—")}
       ${this.stat("mdi:timer-outline", this.t("lastDuration"), system.last_duration == null ? "—" : `${system.last_duration} ${this.t("minutes")}`)}
@@ -393,6 +399,7 @@ class WateringManagerPanel extends HTMLElement {
       ${this.entityField("weather_entity", this.t("weather"), system.weather_entity, ["weather"])}
       ${this.entityField("moisture_sensor_1", this.t("moisture1"), system.moisture_sensor_1, ["sensor"])}
       ${this.entityField("moisture_sensor_2", this.t("moisture2"), system.moisture_sensor_2, ["sensor"])}
+      ${this.entityField("soil_temperature_sensor", this.t("soilTemperature"), system.soil_temperature_sensor, ["sensor"])}
       ${this.entityField("rain_sensor", this.t("rain"), system.rain_sensor, ["sensor"])}
       ${this.entityField("flow_sensor", this.t("flow"), system.flow_sensor, ["sensor"])}
       ${this.number("flow_minimum", this.t("flowMinimum"), system.flow_minimum, 0, 10000, "")}
@@ -413,9 +420,12 @@ class WateringManagerPanel extends HTMLElement {
     const volumeLogs = wateringLogs.filter((log) => log.water_volume_liters != null && Number.isFinite(Number(log.water_volume_liters)));
     const totalLiters = volumeLogs.reduce((sum, log) => sum + Number(log.water_volume_liters), 0);
     const temperatures = wateringLogs.map((log) => log.inputs?.weather?.temperature).filter((value) => value != null && Number.isFinite(Number(value))).map(Number);
+    const soilTemperatures = wateringLogs.map((log) => log.inputs?.soil_temperature).filter((value) => value != null && Number.isFinite(Number(value))).map(Number);
     const moisture = wateringLogs.flatMap((log) => (log.inputs?.moisture || []).filter((reading) => reading.valid).map((reading) => Number(reading.value))).filter(Number.isFinite);
     const averageTemperature = this.average(temperatures);
+    const averageSoilTemperature = this.average(soilTemperatures);
     const averageMoisture = this.average(moisture);
+    const soilTemperatureUnit = this.hass.states[system.soil_temperature_sensor]?.attributes?.unit_of_measurement || "°";
     const completed = logs.filter((log) => log.status === "completed").length;
     const skipped = logs.filter((log) => log.status === "skipped").length;
     const failed = logs.filter((log) => log.status === "failed").length;
@@ -427,6 +437,7 @@ class WateringManagerPanel extends HTMLElement {
         ${this.stat("mdi:timer-outline", this.t("totalWateringTime"), this.formatMinutes(totalMinutes))}
         ${this.stat("mdi:water-outline", this.t("totalWaterVolume"), volumeLogs.length ? this.formatVolume(totalLiters) : "—")}
         ${this.stat("mdi:thermometer", this.t("averageTemperature"), averageTemperature == null ? "—" : `${averageTemperature.toFixed(1)}°`)}
+        ${this.stat("mdi:thermometer-lines", this.t("averageSoilTemperature"), averageSoilTemperature == null ? "—" : `${averageSoilTemperature.toFixed(1)} ${soilTemperatureUnit}`)}
         ${this.stat("mdi:water-percent", this.t("averageMoisture"), averageMoisture == null ? "—" : `${averageMoisture.toFixed(1)}%`)}
         ${this.stat("mdi:sprinkler-variant", this.t("wateringRuns"), String(wateringLogs.length))}
         ${this.stat("mdi:check-circle-outline", this.t("successfulRuns"), String(completed))}
@@ -515,6 +526,12 @@ class WateringManagerPanel extends HTMLElement {
   }
   entityName(state) { return state.attributes.friendly_name || state.entity_id; }
   entityState(id) { const state = id && this.hass.states[id]; if (!state || ["unknown","unavailable"].includes(state.state)) return null; const value = Number(state.state); return Number.isFinite(value) ? value : state.state; }
+  entityValueWithUnit(id) {
+    const state = id && this.hass.states[id];
+    if (!state || ["unknown","unavailable"].includes(state.state)) return "—";
+    const unit = state.attributes.unit_of_measurement;
+    return `${state.state}${unit ? ` ${unit}` : ""}`;
+  }
   weatherSummary(id) {
     const state = id && this.hass.states[id];
     if (!state) return {icon:"mdi:weather-cloudy-alert",text:"—"};
