@@ -1,10 +1,10 @@
-const WM_VERSION = "0.1.3";
+const WM_VERSION = "0.1.4";
 
 const WM_TRANSLATIONS = {
   en: {
     app: "Watering Manager", systems: "Watering systems", newSystem: "New system",
     selectSystem: "Select system", overview: "Overview", schedule: "Schedule",
-    automatic: "Automatic", hardware: "Entities", logs: "Logs", save: "Save",
+    automatic: "Automatic", hardware: "Entities", statistics: "Statistics", logs: "Logs", save: "Save",
     delete: "Delete", duplicate: "Duplicate", runNow: "Run now", stop: "Stop",
     noSystems: "No watering systems yet.", createFirst: "Create the first system",
     name: "Name", enabled: "Enabled", mode: "Mode", manual: "Manual", auto: "Auto",
@@ -41,12 +41,18 @@ const WM_TRANSLATIONS = {
     addTitle: "Create watering system", addHelp: "Give the system a name. All entities and automatic settings can be selected immediately afterwards.",
     cancel: "Cancel", create: "Create", percent: "%", hours: "hours",
     sensorStale: "minutes", systemsCount: "systems", updated: "Updated",
-    help: "Help", close: "Close",
+    help: "Help", close: "Close", day: "Day", week: "Week", month: "Month",
+    totalWateringTime: "Total watering time", totalWaterVolume: "Total water volume",
+    averageTemperature: "Average temperature", averageMoisture: "Average soil moisture",
+    wateringRuns: "Watering runs", successfulRuns: "Completed", skippedRuns: "Skipped",
+    failedRuns: "Failed", durationChart: "Watering time by period", noStatistics: "No watering data for this period.",
+    statisticsNote: "Temperature and moisture averages use readings captured when watering was evaluated. Water volume is estimated from the configured flow sensor and is shown only for supported flow-rate units.",
+    volumePartial: "Volume is based only on runs with available flow data.",
   },
   el: {
     app: "Διαχείριση ποτίσματος", systems: "Συστήματα ποτίσματος", newSystem: "Νέο σύστημα",
     selectSystem: "Επιλογή συστήματος", overview: "Επισκόπηση", schedule: "Πρόγραμμα",
-    automatic: "Αυτόματο", hardware: "Entities", logs: "Ιστορικό", save: "Αποθήκευση",
+    automatic: "Αυτόματο", hardware: "Entities", statistics: "Στατιστικά", logs: "Ιστορικό", save: "Αποθήκευση",
     delete: "Διαγραφή", duplicate: "Αντιγραφή", runNow: "Πότισμα τώρα", stop: "Διακοπή",
     noSystems: "Δεν υπάρχουν ακόμη συστήματα ποτίσματος.", createFirst: "Δημιουργία πρώτου συστήματος",
     name: "Όνομα", enabled: "Ενεργό", mode: "Λειτουργία", manual: "Manual", auto: "Auto",
@@ -83,7 +89,13 @@ const WM_TRANSLATIONS = {
     addTitle: "Δημιουργία συστήματος ποτίσματος", addHelp: "Δώσε ένα όνομα. Τα entities και οι ρυθμίσεις Auto επιλέγονται αμέσως μετά.",
     cancel: "Ακύρωση", create: "Δημιουργία", percent: "%", hours: "ώρες",
     sensorStale: "λεπτά", systemsCount: "συστήματα", updated: "Ενημερώθηκε",
-    help: "Βοήθεια", close: "Κλείσιμο",
+    help: "Βοήθεια", close: "Κλείσιμο", day: "Ημέρα", week: "Εβδομάδα", month: "Μήνας",
+    totalWateringTime: "Συνολικός χρόνος ποτίσματος", totalWaterVolume: "Συνολικός όγκος νερού",
+    averageTemperature: "Μέση θερμοκρασία", averageMoisture: "Μέση υγρασία χώματος",
+    wateringRuns: "Ποτίσματα", successfulRuns: "Ολοκληρωμένα", skippedRuns: "Παραλείψεις",
+    failedRuns: "Αποτυχίες", durationChart: "Χρόνος ποτίσματος ανά περίοδο", noStatistics: "Δεν υπάρχουν δεδομένα ποτίσματος για αυτή την περίοδο.",
+    statisticsNote: "Οι μέσες τιμές θερμοκρασίας και υγρασίας βασίζονται στις μετρήσεις που καταγράφηκαν όταν αξιολογήθηκε το πότισμα. Ο όγκος νερού είναι εκτίμηση από τον αισθητήρα ροής και εμφανίζεται μόνο για υποστηριζόμενες μονάδες ροής.",
+    volumePartial: "Ο όγκος βασίζεται μόνο στα ποτίσματα με διαθέσιμα δεδομένα ροής.",
   },
 };
 
@@ -186,8 +198,8 @@ const WM_HELP = {
     en: "A numeric sensor entity containing actual rain in millimetres over the last 24 hours. It is not the forecast rain probability.",
   },
   flow_sensor: {
-    el: "Προαιρετικός αισθητήρας τρέχουσας ροής νερού. Χρησιμοποιείται για ανίχνευση κλειστής παροχής, βουλώματος ή υπερβολικής ροής/διαρροής.",
-    en: "Optional current water-flow sensor used to detect a closed supply, blockage, excessive flow or a leak.",
+    el: "Προαιρετικός αισθητήρας τρέχουσας ροής νερού. Χρησιμοποιείται για ανίχνευση κλειστής παροχής, βουλώματος ή υπερβολικής ροής/διαρροής. Για να υπολογίζεται και ο όγκος νερού στα Στατιστικά, πρέπει να δίνει ρυθμό ροής σε L/min, L/h, m³/h, m³/min, gal/min ή gal/h.",
+    en: "Optional current water-flow sensor used to detect a closed supply, blockage, excessive flow or a leak. To calculate water volume in Statistics, it must report a flow rate in L/min, L/h, m³/h, m³/min, gal/min or gal/h.",
   },
   flow_minimum: {
     el: "Η χαμηλότερη αποδεκτή τιμή ροής αφού ανοίξει η βάνα. Χρησιμοποίησε την ίδια μονάδα που δίνει ο αισθητήρας. Κάτω από αυτήν το πότισμα σταματά ως αποτυχία.",
@@ -210,6 +222,7 @@ class WateringManagerPanel extends HTMLElement {
     this.state = { systems: [], logs: [], active_system_ids: [] };
     this.selectedId = null;
     this.tab = "overview";
+    this.statsRange = "week";
     this.loading = true;
     this.language = localStorage.getItem("watering-manager-language") || null;
   }
@@ -291,7 +304,7 @@ class WateringManagerPanel extends HTMLElement {
         <aside>
           <label>${this.t("selectSystem")}</label>
           <select id="system-select">${this.state.systems.map((item) => `<option value="${item.id}" ${item.id === this.selectedId ? "selected" : ""}>${this.esc(item.name)}</option>`).join("")}</select>
-          <nav>${["overview","schedule","automatic","hardware","logs"].map((tab) => `<button data-tab="${tab}" class="${this.tab === tab ? "active" : ""}"><ha-icon icon="${this.tabIcon(tab)}"></ha-icon>${this.t(tab)}</button>`).join("")}</nav>
+          <nav>${["overview","schedule","automatic","hardware","statistics","logs"].map((tab) => `<button data-tab="${tab}" class="${this.tab === tab ? "active" : ""}"><ha-icon icon="${this.tabIcon(tab)}"></ha-icon>${this.t(tab)}</button>`).join("")}</nav>
           <div class="aside-status"><span class="dot ${this.state.active_system_ids.includes(system.id) ? "on" : ""}"></span>${this.state.active_system_ids.includes(system.id) ? this.t("running") : this.t("idle")}</div>
         </aside>
         <main>
@@ -308,13 +321,14 @@ class WateringManagerPanel extends HTMLElement {
     return `<div class="actions">${running ? `<button class="danger" id="stop"><ha-icon icon="mdi:stop"></ha-icon>${this.t("stop")}</button>` : `<button id="run"><ha-icon icon="mdi:play"></ha-icon>${this.t("runNow")}</button>`}${editable ? `<button class="primary" id="save"><ha-icon icon="mdi:content-save"></ha-icon>${this.t("save")}</button>` : ""}<button class="icon danger-text" id="delete"><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>`;
   }
 
-  tabIcon(tab) { return ({overview:"mdi:view-dashboard-outline",schedule:"mdi:calendar-clock",automatic:"mdi:auto-fix",hardware:"mdi:chip",logs:"mdi:format-list-bulleted"})[tab]; }
+  tabIcon(tab) { return ({overview:"mdi:view-dashboard-outline",schedule:"mdi:calendar-clock",automatic:"mdi:auto-fix",hardware:"mdi:chip",statistics:"mdi:chart-bar",logs:"mdi:format-list-bulleted"})[tab]; }
 
   tabContent(system) {
     if (this.tab === "overview") return this.overview(system);
     if (this.tab === "schedule") return this.schedule(system);
     if (this.tab === "automatic") return this.automatic(system);
     if (this.tab === "hardware") return this.hardware(system);
+    if (this.tab === "statistics") return this.statistics(system);
     return this.logs(system);
   }
 
@@ -387,6 +401,103 @@ class WateringManagerPanel extends HTMLElement {
     </div></section></form>`;
   }
 
+  statistics(system) {
+    const { start, end } = this.statisticsWindow();
+    const logs = this.state.logs.filter((log) => {
+      if (log.system_id !== system.id) return false;
+      const timestamp = new Date(log.timestamp);
+      return timestamp >= start && timestamp < end;
+    });
+    const wateringLogs = logs.filter((log) => Number(log.actual_duration) > 0);
+    const totalMinutes = wateringLogs.reduce((sum, log) => sum + Number(log.actual_duration || 0), 0);
+    const volumeLogs = wateringLogs.filter((log) => log.water_volume_liters != null && Number.isFinite(Number(log.water_volume_liters)));
+    const totalLiters = volumeLogs.reduce((sum, log) => sum + Number(log.water_volume_liters), 0);
+    const temperatures = wateringLogs.map((log) => log.inputs?.weather?.temperature).filter((value) => value != null && Number.isFinite(Number(value))).map(Number);
+    const moisture = wateringLogs.flatMap((log) => (log.inputs?.moisture || []).filter((reading) => reading.valid).map((reading) => Number(reading.value))).filter(Number.isFinite);
+    const averageTemperature = this.average(temperatures);
+    const averageMoisture = this.average(moisture);
+    const completed = logs.filter((log) => log.status === "completed").length;
+    const skipped = logs.filter((log) => log.status === "skipped").length;
+    const failed = logs.filter((log) => log.status === "failed").length;
+    const buckets = this.statisticsBuckets(wateringLogs, start);
+    const maxMinutes = Math.max(0, ...buckets.map((bucket) => bucket.minutes));
+    return `<div class="statistics-view">
+      <div class="range-tabs">${["day","week","month"].map((range) => `<button type="button" data-stats-range="${range}" class="${this.statsRange === range ? "active" : ""}">${this.t(range)}</button>`).join("")}</div>
+      <div class="grid stats">
+        ${this.stat("mdi:timer-outline", this.t("totalWateringTime"), this.formatMinutes(totalMinutes))}
+        ${this.stat("mdi:water-outline", this.t("totalWaterVolume"), volumeLogs.length ? this.formatVolume(totalLiters) : "—")}
+        ${this.stat("mdi:thermometer", this.t("averageTemperature"), averageTemperature == null ? "—" : `${averageTemperature.toFixed(1)}°`)}
+        ${this.stat("mdi:water-percent", this.t("averageMoisture"), averageMoisture == null ? "—" : `${averageMoisture.toFixed(1)}%`)}
+        ${this.stat("mdi:sprinkler-variant", this.t("wateringRuns"), String(wateringLogs.length))}
+        ${this.stat("mdi:check-circle-outline", this.t("successfulRuns"), String(completed))}
+        ${this.stat("mdi:skip-next-outline", this.t("skippedRuns"), String(skipped))}
+        ${this.stat("mdi:alert-circle-outline", this.t("failedRuns"), String(failed))}
+      </div>
+      <section class="card chart-card"><h3>${this.t("durationChart")}</h3>
+        ${wateringLogs.length ? `<div class="chart-scroll"><div class="bar-chart">${buckets.map((bucket) => {
+          const height = maxMinutes ? Math.max(3, Math.round(bucket.minutes / maxMinutes * 100)) : 0;
+          return `<div class="bar-column" title="${this.esc(bucket.label)}: ${this.esc(this.formatMinutes(bucket.minutes))}"><span>${bucket.minutes ? this.formatCompactMinutes(bucket.minutes) : ""}</span><div class="bar-track"><i style="height:${height}%"></i></div><small>${this.esc(bucket.label)}</small></div>`;
+        }).join("")}</div></div>` : `<p class="muted">${this.t("noStatistics")}</p>`}
+      </section>
+      ${volumeLogs.length && volumeLogs.length < wateringLogs.length ? `<div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("volumePartial")}</div>` : ""}
+      <div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("statisticsNote")}</div>
+    </div>`;
+  }
+
+  statisticsWindow() {
+    const now = new Date();
+    let start;
+    let end;
+    if (this.statsRange === "day") {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    } else if (this.statsRange === "month") {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    } else {
+      const mondayOffset = (now.getDay() + 6) % 7;
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - mondayOffset);
+      end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
+    }
+    return { start, end };
+  }
+
+  statisticsBuckets(logs, start) {
+    let count;
+    let labels;
+    let indexFor;
+    if (this.statsRange === "day") {
+      count = 24;
+      labels = Array.from({length: count}, (_, hour) => String(hour).padStart(2, "0"));
+      indexFor = (date) => date.getHours();
+    } else if (this.statsRange === "month") {
+      count = new Date(start.getFullYear(), start.getMonth() + 1, 0).getDate();
+      labels = Array.from({length: count}, (_, day) => String(day + 1));
+      indexFor = (date) => date.getDate() - 1;
+    } else {
+      count = 7;
+      labels = Array.from({length: count}, (_, day) => new Intl.DateTimeFormat(this.language === "el" ? "el-GR" : "en-GB", {weekday:"short"}).format(new Date(start.getFullYear(), start.getMonth(), start.getDate() + day)));
+      indexFor = (date) => (date.getDay() + 6) % 7;
+    }
+    const buckets = labels.map((label) => ({label, minutes: 0}));
+    logs.forEach((log) => {
+      const index = indexFor(new Date(log.timestamp));
+      if (buckets[index]) buckets[index].minutes += Number(log.actual_duration || 0);
+    });
+    return buckets;
+  }
+
+  average(values) { return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null; }
+  formatMinutes(value) {
+    const minutes = Math.round(value);
+    if (minutes < 60) return `${minutes} ${this.t("minutes")}`;
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    return `${hours} h${remainder ? ` ${remainder} min` : ""}`;
+  }
+  formatCompactMinutes(value) { return value < 60 ? `${Math.round(value)}m` : `${(value / 60).toFixed(1)}h`; }
+  formatVolume(value) { return value >= 1000 ? `${(value / 1000).toFixed(2)} m³` : `${value.toFixed(1)} L`; }
+
   logs(system) {
     const rows = this.state.logs.filter((log) => log.system_id === system.id).slice().reverse().slice(0, 10);
     if (!rows.length) return `<section class="empty compact"><ha-icon icon="mdi:format-list-bulleted"></ha-icon><h3>${this.t("noLogs")}</h3></section>`;
@@ -431,6 +542,7 @@ class WateringManagerPanel extends HTMLElement {
     this.shadowRoot.getElementById("delete")?.addEventListener("click", () => this.remove());
     this.shadowRoot.getElementById("run")?.addEventListener("click", () => this.run());
     this.shadowRoot.getElementById("stop")?.addEventListener("click", () => this.stop());
+    this.shadowRoot.querySelectorAll("[data-stats-range]").forEach((button) => button.addEventListener("click", () => { this.statsRange = button.dataset.statsRange; this.render(); }));
     this.shadowRoot.querySelectorAll(".help-button").forEach((button) => button.addEventListener("click", () => this.showHelpDialog(button.dataset.help)));
   }
 
@@ -512,8 +624,9 @@ class WateringManagerPanel extends HTMLElement {
   styles() {
     return `
       :host{--wm-green:#39745b;--wm-green-soft:color-mix(in srgb,var(--wm-green) 12%,transparent);display:block;background:var(--primary-background-color);min-height:100vh;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,system-ui)}*{box-sizing:border-box}.app{min-height:100vh}header{height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:var(--card-background-color);border-bottom:1px solid var(--divider-color);position:sticky;top:0;z-index:5}.brand,.header-actions,.actions,.title-row{display:flex;align-items:center}.brand{gap:12px}.brand>ha-icon{color:var(--wm-green);--mdc-icon-size:32px}.brand h1{font-size:20px;margin:0;display:flex;align-items:center;gap:8px}.version-badge{font-size:10px;line-height:1;padding:4px 6px;border-radius:10px;background:var(--wm-green-soft);color:var(--wm-green);font-weight:700}.brand small,.muted,.title-row p{color:var(--secondary-text-color)}.header-actions,.actions{gap:8px}button,select,input,textarea{font:inherit;color:inherit}button{border:1px solid var(--divider-color);background:var(--card-background-color);border-radius:10px;padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}button.primary{background:var(--wm-green);color:white;border-color:var(--wm-green)}button.danger{background:var(--error-color);color:white;border-color:var(--error-color)}button.icon{padding:10px}.danger-text{color:var(--error-color)}select,input,textarea{width:100%;background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:11px 12px;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--wm-green);box-shadow:0 0 0 2px var(--wm-green-soft)}.workspace{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1500px;margin:auto;min-height:calc(100vh - 76px)}aside{padding:24px 18px;border-right:1px solid var(--divider-color);background:var(--card-background-color)}aside>label,.field>label,.field-label label{display:block;font-size:12px;font-weight:650;color:var(--secondary-text-color)}aside>label,.field>label{margin:0 0 7px}.field-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 7px}.help-button{width:30px;height:30px;min-width:30px;padding:0;border-radius:50%;border-color:color-mix(in srgb,var(--wm-green) 42%,var(--divider-color));color:var(--wm-green);font-size:14px;font-weight:800;background:var(--wm-green-soft)}.help-button:hover,.help-button:focus{background:var(--wm-green);color:#fff;outline:none}.help-dialog-title{display:flex;align-items:center;gap:12px}.help-dialog-title h2{margin:0}.help-mark{display:grid;place-items:center;width:34px;height:34px;min-width:34px;border-radius:50%;background:var(--wm-green);color:#fff;font-weight:800}.help-dialog section{padding:24px}.help-dialog p{line-height:1.6;white-space:pre-line;margin:18px 0 24px}.help-dialog .help-close{width:100%;min-height:44px}aside nav{display:grid;gap:5px;margin-top:24px}aside nav button{justify-content:flex-start;border:0;background:transparent;padding:11px}aside nav button.active{background:var(--wm-green-soft);color:var(--wm-green)}.aside-status{margin-top:24px;padding:12px;border-top:1px solid var(--divider-color);display:flex;align-items:center;gap:8px;font-size:13px}.dot{width:9px;height:9px;background:#9ca3af;border-radius:50%}.dot.on{background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.12)}main{padding:28px;min-width:0}.title-row{justify-content:space-between;margin-bottom:24px;gap:16px}.title-row h2{font-size:26px;margin:0 0 4px}.title-row p{margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:14px;padding:20px;box-shadow:var(--ha-card-box-shadow,none)}.wide{grid-column:1/-1}.stat{display:flex;align-items:center;gap:16px}.stat>ha-icon{color:var(--wm-green);background:var(--wm-green-soft);padding:12px;border-radius:12px;box-sizing:content-box}.stat small,.stat strong{display:block}.stat strong{font-size:20px;margin-top:5px}.card h3{margin:0 0 18px}.reason{font-size:18px;margin:0}.info{display:flex;gap:12px;align-items:flex-start}.info ha-icon,.info-line ha-icon{color:var(--wm-green);flex:none}.info p{margin:0}.form-card{max-width:1000px}.fields{display:grid;gap:17px}.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}.field{margin-bottom:17px}.suffix{display:flex}.suffix input{border-radius:9px 0 0 9px}.suffix span{border:1px solid var(--divider-color);border-left:0;border-radius:0 9px 9px 0;padding:11px;background:var(--secondary-background-color);white-space:nowrap;color:var(--secondary-text-color)}.toggle{display:flex;align-items:center;gap:10px;margin:5px 0 22px}.toggle input{display:none}.toggle span{width:42px;height:24px;background:#9ca3af;border-radius:20px;position:relative}.toggle span:after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;background:white;border-radius:50%;transition:.2s}.toggle input:checked+span{background:var(--wm-green)}.toggle input:checked+span:after{left:21px}.days{display:flex;gap:8px;flex-wrap:wrap}.days input{display:none}.days span{display:flex;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--divider-color);border-radius:50%;cursor:pointer}.days input:checked+span{background:var(--wm-green);border-color:var(--wm-green);color:white}.info-line{display:flex;align-items:flex-start;gap:9px;padding:12px;margin:12px 0;background:var(--wm-green-soft);border-radius:10px;font-size:13px}.empty{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:var(--secondary-text-color)}.empty>ha-icon{--mdc-icon-size:60px;color:var(--wm-green)}.empty.compact{min-height:300px}.loading{min-height:60vh;display:grid;place-items:center}.log-card{padding:0;overflow:hidden}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--divider-color);font-size:13px}th{color:var(--secondary-text-color);background:var(--secondary-background-color)}.pill{padding:4px 8px;border-radius:20px;background:var(--secondary-background-color)}.pill.completed{color:#15803d;background:#dcfce7}.pill.failed{color:#b91c1c;background:#fee2e2}.toast{position:fixed;right:24px;bottom:24px;background:#1f2937;color:white;border-radius:10px;padding:13px 18px;opacity:0;transform:translateY(20px);pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1;transform:none}.toast.error{background:var(--error-color)}
+      .statistics-view{display:grid;gap:16px}.range-tabs{display:flex;gap:6px;padding:4px;background:var(--secondary-background-color);border-radius:12px;width:max-content;max-width:100%}.range-tabs button{border:0;background:transparent;min-width:92px}.range-tabs button.active{background:var(--wm-green);color:#fff}.chart-card{overflow:hidden}.chart-scroll{overflow-x:auto;padding:4px 0 8px}.bar-chart{height:220px;display:flex;align-items:stretch;gap:8px;min-width:max-content}.bar-column{width:38px;display:grid;grid-template-rows:22px 1fr 22px;align-items:end;text-align:center}.bar-column>span{font-size:10px;color:var(--secondary-text-color);align-self:center}.bar-track{height:150px;width:22px;margin:auto;background:var(--secondary-background-color);border-radius:7px;overflow:hidden;display:flex;align-items:flex-end}.bar-track i{display:block;width:100%;background:var(--wm-green);border-radius:7px 7px 0 0;min-height:0}.bar-column small{font-size:11px;color:var(--secondary-text-color);overflow:hidden;text-overflow:ellipsis}.statistics-view>.info-line{margin:0}.statistics-view .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
       dialog{border:0;border-radius:16px;background:var(--card-background-color);color:var(--primary-text-color);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.35);max-width:460px;width:calc(100% - 32px)}dialog::backdrop{background:rgba(0,0,0,.5)}dialog form{padding:24px}dialog h2{margin:0 0 8px}dialog p{color:var(--secondary-text-color);margin-bottom:20px}dialog label{display:grid;gap:7px;font-size:13px;font-weight:650}dialog form>div{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
-      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.version-badge{font-size:9px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.help-button{width:36px;height:36px;min-width:36px}.help-dialog{max-height:calc(100vh - 24px);overflow:auto}.help-dialog section{padding:20px}.toast{left:14px;right:14px;bottom:14px}}
+      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.version-badge{font-size:9px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two{grid-template-columns:1fr}.stats,.statistics-view .stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.help-button{width:36px;height:36px;min-width:36px}.help-dialog{max-height:calc(100vh - 24px);overflow:auto}.help-dialog section{padding:20px}.range-tabs{width:100%}.range-tabs button{min-width:0;flex:1;padding:10px 8px}.toast{left:14px;right:14px;bottom:14px}}
       @media(max-width:450px){.stats{grid-template-columns:1fr}.header-actions select{max-width:105px}.brand>ha-icon{display:none}}
     `;
   }
