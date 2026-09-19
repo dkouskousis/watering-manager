@@ -63,7 +63,7 @@ class WateringManager:
         """Return JSON-safe application state."""
         return {
             "systems": list(self.systems.values()),
-            "logs": self.logs[-100:],
+            "logs": self.logs[-LOG_LIMIT:],
             "active_system_ids": list(self.active_runs),
         }
 
@@ -97,13 +97,13 @@ class WateringManager:
 
     async def async_delete_system(self, system_id: str) -> None:
         """Delete a stopped watering system."""
+        system = self._get_system(system_id)
         if system_id in self.active_runs:
             raise ValueError("system_is_running")
         for active_id in self.active_runs:
             active = self.systems.get(active_id)
             if active and active.get("simultaneous_group") == system.get("simultaneous_group"):
                 raise ValueError("watering_group_is_busy")
-        self._get_system(system_id)
         del self.systems[system_id]
         self.logs = [log for log in self.logs if log["system_id"] != system_id]
         await self._async_changed()
@@ -147,7 +147,13 @@ class WateringManager:
             return {
                 "duration": self._bounded_duration(system, duration),
                 "reason": "manual_duration",
-                "inputs": {},
+                "inputs": {
+                    "moisture": [
+                        self._read_sensor(system.get("moisture_sensor_1", ""), system),
+                        self._read_sensor(system.get("moisture_sensor_2", ""), system),
+                    ],
+                    "weather": self._weather_adjustment(system),
+                },
             }
 
         readings = [
@@ -220,18 +226,29 @@ class WateringManager:
         loop = asyncio.get_running_loop()
         valve_opened_at: float | None = None
         total_open_seconds = 0.0
+        current_flow_lpm: float | None = None
+        total_volume_liters = 0.0
+        volume_available = False
         status = "completed"
         try:
             for cycle in range(cycles):
                 await self._async_set_valve(system["valve_entity"], True)
                 valve_opened_at = loop.time()
+                current_flow_lpm = None
                 grace = min(int(system["flow_grace_seconds"]), cycle_seconds)
                 await asyncio.sleep(grace)
-                self._validate_flow(system)
+                flow, unit = self._validate_flow(system)
+                current_flow_lpm = self._flow_to_liters_per_minute(flow, unit)
+                if current_flow_lpm is not None:
+                    volume_available = True
                 await asyncio.sleep(max(0, cycle_seconds - grace))
                 await self._async_set_valve(system["valve_entity"], False)
-                total_open_seconds += loop.time() - valve_opened_at
+                cycle_open_seconds = loop.time() - valve_opened_at
+                total_open_seconds += cycle_open_seconds
+                if current_flow_lpm is not None:
+                    total_volume_liters += current_flow_lpm * cycle_open_seconds / 60
                 valve_opened_at = None
+                current_flow_lpm = None
                 if cycle < cycles - 1:
                     await asyncio.sleep(int(system["soak_pause_minutes"]) * 60)
         except asyncio.CancelledError:
@@ -244,10 +261,16 @@ class WateringManager:
         finally:
             await self._async_set_valve(system["valve_entity"], False)
             if valve_opened_at is not None:
-                total_open_seconds += loop.time() - valve_opened_at
+                cycle_open_seconds = loop.time() - valve_opened_at
+                total_open_seconds += cycle_open_seconds
+                if current_flow_lpm is not None:
+                    total_volume_liters += current_flow_lpm * cycle_open_seconds / 60
             actual = total_open_seconds / 60
             finished_decision = dict(decision)
             finished_decision["actual_duration"] = round(actual, 1)
+            finished_decision["water_volume_liters"] = (
+                round(total_volume_liters, 2) if volume_available else None
+            )
             system["last_run_at"] = started.isoformat()
             system["last_duration"] = finished_decision["actual_duration"]
             system["last_reason"] = decision["reason"]
@@ -310,11 +333,14 @@ class WateringManager:
         except ValueError:
             return None
 
-    def _validate_flow(self, system: dict[str, Any]) -> None:
+    def _validate_flow(
+        self, system: dict[str, Any]
+    ) -> tuple[float | None, str | None]:
         """Abort when a configured flow sensor reports an unsafe value."""
         entity_id = system.get("flow_sensor", "")
         if not entity_id:
-            return
+            return None, None
+        state = self.hass.states.get(entity_id)
         flow = self._read_numeric(entity_id)
         if flow is None:
             raise RuntimeError("flow_sensor_unavailable")
@@ -322,6 +348,29 @@ class WateringManager:
             raise RuntimeError("flow_too_low")
         if flow > float(system["flow_maximum"]):
             raise RuntimeError("flow_too_high")
+        unit = state.attributes.get("unit_of_measurement") if state else None
+        return flow, unit
+
+    @staticmethod
+    def _flow_to_liters_per_minute(
+        flow: float | None, unit: str | None
+    ) -> float | None:
+        """Convert supported flow-rate units to litres per minute."""
+        if flow is None or not unit:
+            return None
+        normalized = unit.strip().lower().replace("³", "3").replace(" ", "")
+        factors = {
+            "l/min": 1.0,
+            "l/m": 1.0,
+            "l/h": 1 / 60,
+            "m3/h": 1000 / 60,
+            "m3/min": 1000,
+            "gal/min": 3.785411784,
+            "gpm": 3.785411784,
+            "gal/h": 3.785411784 / 60,
+        }
+        factor = factors.get(normalized)
+        return flow * factor if factor is not None else None
 
     def _weather_adjustment(self, system: dict[str, Any]) -> dict[str, Any]:
         entity_id = system.get("weather_entity", "")
@@ -404,6 +453,7 @@ class WateringManager:
                 "reason": decision["reason"],
                 "planned_duration": decision["duration"],
                 "actual_duration": decision.get("actual_duration"),
+                "water_volume_liters": decision.get("water_volume_liters"),
                 "inputs": decision.get("inputs", {}),
             }
         )
