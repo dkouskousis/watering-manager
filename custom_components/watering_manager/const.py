@@ -8,7 +8,7 @@ STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.2.0"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.2.1"
 EVENT_UPDATED = f"{DOMAIN}_updated"
 
 DEFAULT_SYSTEM = {
@@ -33,6 +33,7 @@ DEFAULT_SYSTEM = {
     "notify_failures": True,
     "notify_warnings": True,
     "notify_success": False,
+    "notification_targets": [],
     "post_check_enabled": True,
     "post_check_delay_minutes": 30,
     "post_check_min_increase": 5,
