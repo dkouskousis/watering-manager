@@ -152,9 +152,14 @@ class WateringManager:
                         self._read_sensor(system.get("moisture_sensor_1", ""), system),
                         self._read_sensor(system.get("moisture_sensor_2", ""), system),
                     ],
-                    "soil_temperature": self._read_numeric(
-                        system.get("soil_temperature_sensor", "")
-                    ),
+                    "soil_temperatures": [
+                        self._read_numeric(
+                            system.get("soil_temperature_sensor", "")
+                        ),
+                        self._read_numeric(
+                            system.get("soil_temperature_sensor_2", "")
+                        ),
+                    ],
                     "weather": self._weather_adjustment(system),
                 },
             }
@@ -166,9 +171,10 @@ class WateringManager:
         valid = [reading for reading in readings if reading["valid"]]
         inputs: dict[str, Any] = {
             "moisture": readings,
-            "soil_temperature": self._read_numeric(
-                system.get("soil_temperature_sensor", "")
-            ),
+            "soil_temperatures": [
+                self._read_numeric(system.get("soil_temperature_sensor", "")),
+                self._read_numeric(system.get("soil_temperature_sensor_2", "")),
+            ],
         }
 
         if not valid:
