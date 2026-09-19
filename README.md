@@ -4,7 +4,7 @@ Watering Manager is a Home Assistant custom integration for managing multiple ir
 
 > Status: early development release. Test with supervision before relying on it unattended.
 
-Current development version: **0.2.0**
+Current development version: **0.2.1**
 
 ## Current features
 
@@ -25,7 +25,7 @@ Current development version: **0.2.0**
 - Valve closing in the run cleanup path, including errors and user cancellation.
 - Persisted fail-safe recovery after Home Assistant restarts or crashes.
 - Valve-close verification, a second close attempt and residual-flow leak checks.
-- Configurable mobile `notify.*` alerts plus persistent critical Home Assistant alerts.
+- Multiple notification recipients using modern notify entities or legacy `notify.*` services, with independent failure, warning and success preferences per recipient.
 - Delayed post-watering verification for each configured moisture sensor.
 - Guided flow and dry-to-wet duration calibration with explicit Apply actions.
 - Mobile-friendly Diagnostics page with live component health and pending checks.
