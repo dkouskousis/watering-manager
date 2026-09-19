@@ -12,6 +12,7 @@ from uuid import uuid4
 
 from homeassistant.components import persistent_notification
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
@@ -54,6 +55,7 @@ class WateringManager:
         for system in self.systems.values():
             for key, value in DEFAULT_SYSTEM.items():
                 system.setdefault(key, deepcopy(value))
+            self._migrate_notification_target(system)
         self.logs = data.get("logs", [])[-LOG_LIMIT:]
         self.persisted_runs = data.get("active_runs", {})
         self.pending_checks = data.get("pending_checks", {})
@@ -220,6 +222,39 @@ class WateringManager:
         valve = str(system.get("valve_entity", ""))
         if valve and valve.split(".", 1)[0] not in {"valve", "switch", "input_boolean"}:
             raise ValueError("unsupported_valve_entity")
+        targets = system.get("notification_targets", [])
+        if not isinstance(targets, list) or len(targets) > 20:
+            raise ValueError("notification_targets_invalid")
+        destinations: set[str] = set()
+        for target in targets:
+            if not isinstance(target, dict):
+                raise ValueError("notification_target_invalid")
+            destination = str(target.get("destination", ""))
+            if not destination.startswith(("entity:notify.", "service:notify.")):
+                raise ValueError("notification_destination_invalid")
+            if destination in destinations:
+                raise ValueError("notification_destination_duplicate")
+            destinations.add(destination)
+            if not str(target.get("name", "")).strip():
+                raise ValueError("notification_recipient_name_required")
+
+    @staticmethod
+    def _migrate_notification_target(system: dict[str, Any]) -> None:
+        """Convert the previous single notifier setting once, preserving choices."""
+        if system.get("notification_targets") or not system.get("notification_service"):
+            return
+        service = str(system["notification_service"])
+        if not service.startswith("notify."):
+            service = f"notify.{service}"
+        system["notification_targets"] = [
+            {
+                "name": "Primary recipient",
+                "destination": f"service:{service}",
+                "failure": bool(system.get("notify_failures", True)),
+                "warning": bool(system.get("notify_warnings", True)),
+                "success": bool(system.get("notify_success", False)),
+            }
+        ]
 
     def _calculate_decision(self, system: dict[str, Any], trigger: str) -> dict[str, Any]:
         """Calculate duration and preserve every input used by the decision."""
@@ -628,13 +663,6 @@ class WateringManager:
         reason: str,
         detail: str | None = None,
     ) -> None:
-        enabled = {
-            "failure": system.get("notify_failures", True),
-            "warning": system.get("notify_warnings", True),
-            "success": system.get("notify_success", False),
-        }.get(level, True)
-        if not enabled:
-            return
         greek = self.hass.config.language.startswith("el")
         title = (
             f"Πότισμα · {system['name']}" if greek else f"Watering · {system['name']}"
@@ -652,13 +680,17 @@ class WateringManager:
                 title,
                 f"watering_manager_{system['id']}_{level}",
             )
-        service = str(system.get("notification_service", "")).strip()
-        if service.startswith("notify."):
-            service = service.split(".", 1)[1]
-        if service and self.hass.services.has_service("notify", service):
-            await self.hass.services.async_call(
-                "notify", service, {"title": title, "message": message}, blocking=True
-            )
+        for target in system.get("notification_targets", []):
+            if not target.get(level, False):
+                continue
+            try:
+                await self._async_send_notification(
+                    str(target["destination"]), title, message
+                )
+            except (ValueError, RuntimeError, HomeAssistantError):
+                _LOGGER.exception(
+                    "Unable to notify %s for %s", target.get("name"), system["name"]
+                )
 
     def _create_repair_notification(self, system: dict[str, Any], reason: str) -> None:
         persistent_notification.async_create(
@@ -669,25 +701,52 @@ class WateringManager:
             f"watering_manager_critical_{system.get('id', 'unknown')}",
         )
 
-    async def async_test_notification(self, system_id: str) -> None:
+    async def async_test_notification(
+        self, system_id: str, destination: str
+    ) -> None:
         system = self._get_system(system_id)
-        service = str(system.get("notification_service", "")).strip()
-        if service.startswith("notify."):
-            service = service.split(".", 1)[1]
-        if not service:
-            raise ValueError("notification_service_required")
-        if not self.hass.services.has_service("notify", service):
-            raise ValueError("notification_service_unavailable")
+        configured = {
+            str(item.get("destination"))
+            for item in system.get("notification_targets", [])
+        }
+        if destination not in configured:
+            raise ValueError("notification_destination_not_configured")
         greek = self.hass.config.language.startswith("el")
-        await self.hass.services.async_call(
-            "notify",
-            service,
-            {
-                "title": f"Watering Manager · {system['name']}",
-                "message": "Δοκιμαστική ειδοποίηση" if greek else "Test notification",
-            },
-            blocking=True,
+        await self._async_send_notification(
+            destination,
+            f"Watering Manager · {system['name']}",
+            "Δοκιμαστική ειδοποίηση" if greek else "Test notification",
         )
+
+    async def _async_send_notification(
+        self, destination: str, title: str, message: str
+    ) -> None:
+        """Send to a modern notify entity or an explicitly selected legacy service."""
+        destination_type, separator, value = destination.partition(":")
+        if not separator or not value.startswith("notify."):
+            raise ValueError("notification_destination_invalid")
+        if destination_type == "entity":
+            state = self.hass.states.get(value)
+            if state is None or state.state in {"unknown", "unavailable"}:
+                raise RuntimeError("notification_entity_unavailable")
+            if not self.hass.services.has_service("notify", "send_message"):
+                raise RuntimeError("notification_send_message_unavailable")
+            await self.hass.services.async_call(
+                "notify",
+                "send_message",
+                {"entity_id": value, "title": title, "message": message},
+                blocking=True,
+            )
+            return
+        if destination_type == "service":
+            service = value.split(".", 1)[1]
+            if not self.hass.services.has_service("notify", service):
+                raise RuntimeError("notification_service_unavailable")
+            await self.hass.services.async_call(
+                "notify", service, {"title": title, "message": message}, blocking=True
+            )
+            return
+        raise ValueError("notification_destination_invalid")
 
     async def async_start_calibration(self, system_id: str, kind: str) -> None:
         system = self._get_system(system_id)
@@ -943,12 +1002,19 @@ class WateringManager:
                 bool(state and state.state not in {"unknown", "unavailable"}),
                 state.state if state else None,
             )
-        service = str(system.get("notification_service", "")).replace("notify.", "")
+        targets = system.get("notification_targets", [])
+        available_targets = sum(
+            1
+            for target in targets
+            if self._notification_destination_available(
+                str(target.get("destination", ""))
+            )
+        )
         add(
             "notifications",
-            bool(service),
-            bool(service and self.hass.services.has_service("notify", service)),
-            f"notify.{service}" if service else None,
+            bool(targets),
+            bool(targets) and available_targets == len(targets),
+            f"{available_targets}/{len(targets)}" if targets else None,
         )
         critical = any(
             item["status"] == "error" and item["key"] == "valve" for item in checks
@@ -968,6 +1034,21 @@ class WateringManager:
             ),
             "calibration": self.calibrations.get(system["id"]),
         }
+
+    def _notification_destination_available(self, destination: str) -> bool:
+        destination_type, separator, value = destination.partition(":")
+        if not separator or not value.startswith("notify."):
+            return False
+        if destination_type == "entity":
+            state = self.hass.states.get(value)
+            return bool(
+                state
+                and state.state not in {"unknown", "unavailable"}
+                and self.hass.services.has_service("notify", "send_message")
+            )
+        if destination_type == "service":
+            return self.hass.services.has_service("notify", value.split(".", 1)[1])
+        return False
 
     async def _async_scheduler_tick(self, now: datetime) -> None:
         """Start systems whose local schedule matches the current minute."""
