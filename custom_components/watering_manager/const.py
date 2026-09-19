@@ -8,7 +8,7 @@ STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.1.3"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.1.4"
 EVENT_UPDATED = f"{DOMAIN}_updated"
 
 DEFAULT_SYSTEM = {
