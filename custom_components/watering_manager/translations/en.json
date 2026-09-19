@@ -10,5 +10,25 @@
     "abort": {
       "already_configured": "Watering Manager is already configured."
     }
+  },
+  "entity": {
+    "sensor": {
+      "status": {"name": "Status", "state": {"idle": "Idle", "running": "Running", "maintenance": "Maintenance", "disabled": "Disabled"}},
+      "next_run": {"name": "Next run"},
+      "water_deficit": {"name": "Water deficit"},
+      "last_water_volume": {"name": "Last water volume"},
+      "total_water": {"name": "Total water"},
+      "total_duration": {"name": "Total watering time"},
+      "moisture_1": {"name": "Soil moisture 1"},
+      "moisture_2": {"name": "Soil moisture 2"}
+    },
+    "binary_sensor": {
+      "active": {"name": "Watering active"},
+      "problem": {"name": "Problem"}
+    },
+    "switch": {
+      "enabled": {"name": "Enabled"},
+      "maintenance_mode": {"name": "Maintenance mode"}
+    }
   }
 }

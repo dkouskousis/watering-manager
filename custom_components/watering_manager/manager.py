@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from contextlib import suppress
 from copy import deepcopy
-from datetime import UTC, datetime, timedelta
-import logging
+from datetime import UTC, date, datetime, timedelta
+from math import pi
 from typing import Any
 from uuid import uuid4
 
@@ -18,6 +19,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
 from .const import (
+    DATA_SCHEMA_VERSION,
     DEFAULT_SYSTEM,
     EVENT_UPDATED,
     LOG_LIMIT,
@@ -41,6 +43,8 @@ class WateringManager:
         self.persisted_runs: dict[str, dict[str, Any]] = {}
         self.pending_checks: dict[str, dict[str, Any]] = {}
         self.calibrations: dict[str, dict[str, Any]] = {}
+        self.water_balances: dict[str, dict[str, Any]] = {}
+        self.aggregates: dict[str, dict[str, dict[str, Any]]] = {}
         self._post_check_tasks: dict[str, asyncio.Task[None]] = {}
         self._calibration_tasks: dict[str, asyncio.Task[None]] = {}
         self._watchdog_tasks: dict[str, asyncio.Task[None]] = {}
@@ -60,6 +64,12 @@ class WateringManager:
         self.persisted_runs = data.get("active_runs", {})
         self.pending_checks = data.get("pending_checks", {})
         self.calibrations = data.get("calibrations", {})
+        self.water_balances = data.get("water_balances", {})
+        self.aggregates = data.get("aggregates", {})
+        if not self.aggregates and self.logs:
+            self._rebuild_aggregates()
+        for system_id in self.systems:
+            self._ensure_water_balance(system_id)
         await self._async_recover_interrupted_runs()
         self._recover_calibration_states()
         self._restore_pending_checks()
@@ -103,12 +113,17 @@ class WateringManager:
             },
             "calibrations": self.calibrations,
             "pending_checks": list(self.pending_checks.values()),
+            "water_balances": self.water_balances,
+            "aggregates": self.aggregates,
+            "schema_version": DATA_SCHEMA_VERSION,
         }
 
     async def async_create_system(self, values: dict[str, Any]) -> dict[str, Any]:
         """Create a watering system."""
         system = deepcopy(DEFAULT_SYSTEM)
-        system.update({key: value for key, value in values.items() if key in DEFAULT_SYSTEM})
+        system.update(
+            {key: value for key, value in values.items() if key in DEFAULT_SYSTEM}
+        )
         self._validate_system(system)
         system["id"] = uuid4().hex
         now = datetime.now(UTC).isoformat()
@@ -118,6 +133,7 @@ class WateringManager:
         system["last_duration"] = None
         system["last_reason"] = None
         self.systems[system["id"]] = system
+        self._ensure_water_balance(system["id"])
         await self._async_changed()
         return system
 
@@ -144,7 +160,9 @@ class WateringManager:
             raise ValueError("system_is_running")
         for active_id in {*self.active_runs, *self._calibration_tasks}:
             active = self.systems.get(active_id)
-            if active and active.get("simultaneous_group") == system.get("simultaneous_group"):
+            if active and active.get("simultaneous_group") == system.get(
+                "simultaneous_group"
+            ):
                 raise ValueError("watering_group_is_busy")
         del self.systems[system_id]
         self.logs = [log for log in self.logs if log["system_id"] != system_id]
@@ -155,6 +173,8 @@ class WateringManager:
                 if task:
                     task.cancel()
         self.calibrations.pop(system_id, None)
+        self.water_balances.pop(system_id, None)
+        self.aggregates.pop(system_id, None)
         await self._async_changed()
 
     async def async_run_system(self, system_id: str, trigger: str) -> dict[str, Any]:
@@ -188,6 +208,62 @@ class WateringManager:
             return
         await self._async_close_and_verify(system)
 
+    async def async_test_valve(self, system_id: str) -> None:
+        """Run a short maintenance test through the same safety path as watering."""
+        system = self._get_system(system_id)
+        if not system.get("maintenance_mode"):
+            raise ValueError("maintenance_mode_required")
+        if not system.get("valve_entity"):
+            raise ValueError("valve_entity_required")
+        self._ensure_can_start(system)
+        task = self.hass.async_create_task(
+            self._async_execute_valve_test(system),
+            f"watering_manager_valve_test_{system_id}",
+        )
+        self.active_runs[system_id] = task
+        await self._async_notify()
+
+    async def _async_execute_valve_test(self, system: dict[str, Any]) -> None:
+        seconds = max(2, min(60, int(system.get("valve_test_seconds", 10))))
+        status = "completed"
+        reason = "valve_test_passed"
+        started = datetime.now(UTC)
+        try:
+            await self._async_open_valve(system, "valve_test", seconds)
+            grace = min(int(system.get("flow_grace_seconds", 10)), seconds)
+            await asyncio.sleep(grace)
+            self._validate_flow(system)
+            await asyncio.sleep(max(0, seconds - grace))
+        except asyncio.CancelledError:
+            if system["id"] in self._watchdog_failures:
+                self._watchdog_failures.discard(system["id"])
+                status, reason = "failed", "emergency_runtime_exceeded"
+            else:
+                status, reason = "stopped", "stopped_by_user"
+        except Exception as err:  # noqa: BLE001 - maintenance must always close safely
+            status, reason = "failed", str(err)
+        finally:
+            try:
+                await self._async_close_and_verify(system)
+            except Exception as err:  # noqa: BLE001 - surface any close failure
+                status, reason = "failed", str(err)
+                self._create_repair_notification(system, reason)
+            self.active_runs.pop(system["id"], None)
+            await self._async_log(
+                system,
+                "test",
+                status,
+                {
+                    "duration": round(seconds / 60, 2),
+                    "actual_duration": round(
+                        (datetime.now(UTC) - started).total_seconds() / 60, 2
+                    ),
+                    "reason": reason,
+                    "water_volume_liters": None,
+                    "inputs": {},
+                },
+            )
+
     def _ensure_can_start(self, system: dict[str, Any]) -> None:
         if system["id"] in self.active_runs or system["id"] in self._calibration_tasks:
             raise ValueError("system_is_running")
@@ -214,11 +290,46 @@ class WateringManager:
             "flow_calibration_seconds",
             "duration_calibration_minutes",
             "duration_calibration_wait_minutes",
+            "flow_tolerance_percent",
+            "pot_count",
+            "irrigation_efficiency_percent",
+            "water_balance_capacity_mm",
+            "water_balance_trigger_mm",
+            "valve_test_seconds",
         )
         if any(float(system[key]) <= 0 for key in positive):
             raise ValueError("positive_value_required")
         if float(system["flow_minimum"]) > float(system["flow_maximum"]):
             raise ValueError("flow_limits_invalid")
+        if float(system["flow_tolerance_percent"]) > 100:
+            raise ValueError("flow_tolerance_invalid")
+        if float(system["normal_flow_rate"]) < 0:
+            raise ValueError("normal_flow_invalid")
+        if system.get("plant_profile") not in {"low", "medium", "high", "custom"}:
+            raise ValueError("plant_profile_invalid")
+        if not 0 < float(system["crop_coefficient"]) <= 2:
+            raise ValueError("crop_coefficient_invalid")
+        if not 0 < float(system["irrigation_efficiency_percent"]) <= 100:
+            raise ValueError("irrigation_efficiency_invalid")
+        if system.get("pot_shape") not in {"round", "rectangular"}:
+            raise ValueError("pot_shape_invalid")
+        dimension_keys = (
+            ("pot_diameter_cm",)
+            if system.get("pot_shape") == "round"
+            else ("pot_length_cm", "pot_width_cm")
+        )
+        if any(float(system[key]) <= 0 for key in dimension_keys):
+            raise ValueError("pot_dimensions_invalid")
+        if float(system["water_balance_trigger_mm"]) > float(
+            system["water_balance_capacity_mm"]
+        ):
+            raise ValueError("water_balance_trigger_invalid")
+        paused_until = str(system.get("paused_until", "")).strip()
+        if paused_until:
+            try:
+                date.fromisoformat(paused_until)
+            except ValueError as err:
+                raise ValueError("paused_until_invalid") from err
         valve = str(system.get("valve_entity", ""))
         if valve and valve.split(".", 1)[0] not in {"valve", "switch", "input_boolean"}:
             raise ValueError("unsupported_valve_entity")
@@ -228,7 +339,7 @@ class WateringManager:
         destinations: set[str] = set()
         for target in targets:
             if not isinstance(target, dict):
-                raise ValueError("notification_target_invalid")
+                raise ValueError("notification_target_invalid")  # noqa: TRY004
             destination = str(target.get("destination", ""))
             if not destination.startswith(("entity:notify.", "service:notify.")):
                 raise ValueError("notification_destination_invalid")
@@ -256,47 +367,39 @@ class WateringManager:
             }
         ]
 
-    def _calculate_decision(self, system: dict[str, Any], trigger: str) -> dict[str, Any]:
+    def _calculate_decision(
+        self, system: dict[str, Any], trigger: str
+    ) -> dict[str, Any]:
         """Calculate duration and preserve every input used by the decision."""
-        if not system["enabled"] and trigger == "schedule":
-            return {"duration": 0, "reason": "system_disabled", "inputs": {}}
+        gates = self._decision_gates(system, trigger)
+        inputs: dict[str, Any] = {"gates": gates}
+        blocked = next((gate for gate in gates if not gate["passed"]), None)
+        if blocked:
+            return {"duration": 0, "reason": blocked["key"], "inputs": inputs}
 
         if trigger == "manual" or system["mode"] == "manual":
             duration = float(system["manual_duration"])
-            return {
+            result = {
                 "duration": self._bounded_duration(system, duration),
                 "reason": "manual_duration",
-                "inputs": {
-                    "moisture": [
-                        self._read_sensor(system.get("moisture_sensor_1", ""), system),
-                        self._read_sensor(system.get("moisture_sensor_2", ""), system),
-                    ],
-                    "soil_temperatures": [
-                        self._read_numeric(
-                            system.get("soil_temperature_sensor", "")
-                        ),
-                        self._read_numeric(
-                            system.get("soil_temperature_sensor_2", "")
-                        ),
-                    ],
-                    "weather": self._weather_adjustment(system),
-                },
+                "inputs": inputs,
             }
+            inputs.update(self._environment_inputs(system))
+            result["expected_volume_liters"] = self._expected_volume(
+                system, result["duration"]
+            )
+            return result
 
         readings = [
             self._read_sensor(system.get("moisture_sensor_1", ""), system),
             self._read_sensor(system.get("moisture_sensor_2", ""), system),
         ]
         valid = [reading for reading in readings if reading["valid"]]
-        inputs: dict[str, Any] = {
-            "moisture": readings,
-            "soil_temperatures": [
-                self._read_numeric(system.get("soil_temperature_sensor", "")),
-                self._read_numeric(system.get("soil_temperature_sensor_2", "")),
-            ],
-        }
+        inputs.update(self._environment_inputs(system))
+        inputs["moisture"] = readings
+        configured = [reading for reading in readings if reading["entity_id"]]
 
-        if not valid:
+        if configured and not valid:
             if system["sensor_failure"] == "base_duration":
                 return {
                     "duration": self._bounded_duration(system, system["base_duration"]),
@@ -308,43 +411,134 @@ class WateringManager:
         values = [reading["value"] for reading in valid]
         dry = float(system["dry_threshold"])
         wet = float(system["wet_threshold"])
+        moisture_factor = 1.0
 
         if len(values) == 2 and min(values) < dry <= max(values):
             duration = float(system["conflict_duration"])
             reason = "sensor_conflict_short_run"
-        elif all(value >= wet for value in values):
+            inputs["moisture_factor"] = None
+            return {
+                "duration": self._bounded_duration(system, duration),
+                "reason": reason,
+                "expected_volume_liters": self._expected_volume(system, duration),
+                "inputs": inputs,
+            }
+        elif values and all(value >= wet for value in values):
             return {"duration": 0, "reason": "soil_wet", "inputs": inputs}
-        else:
+        elif values:
             average = sum(values) / len(values)
             if average <= dry:
-                deficit_factor = 1 + min(0.5, (dry - average) / max(dry, 1) * 0.5)
-                duration = float(system["base_duration"]) * deficit_factor
+                moisture_factor = 1 + min(0.5, (dry - average) / max(dry, 1) * 0.5)
                 reason = "soil_dry"
             else:
                 ratio = (wet - average) / max(wet - dry, 1)
-                duration = float(system["base_duration"]) * max(0.25, ratio)
+                moisture_factor = max(0.25, ratio)
                 reason = "soil_partly_dry"
+        else:
+            reason = (
+                "et_water_balance"
+                if system.get("water_balance_enabled")
+                else "no_moisture_sensors"
+            )
+        inputs["moisture_factor"] = round(moisture_factor, 3)
 
-        weather = self._weather_adjustment(system)
-        inputs["weather"] = weather
-        duration *= weather["factor"]
+        if system.get("water_balance_enabled"):
+            balance = self._water_balance_preview(system)
+            inputs["water_balance"] = balance
+            if not balance["available"]:
+                return {"duration": 0, "reason": "et0_unavailable", "inputs": inputs}
+            if balance["deficit_mm"] < float(system["water_balance_trigger_mm"]):
+                return {
+                    "duration": 0,
+                    "reason": "water_balance_below_trigger",
+                    "inputs": inputs,
+                }
+            target_liters = balance["target_liters"] * moisture_factor
+            flow_lpm = self._normal_flow_lpm(system)
+            if flow_lpm:
+                duration = target_liters / flow_lpm
+                inputs["duration_basis"] = "water_balance_and_flow"
+            else:
+                capacity = max(float(system["water_balance_capacity_mm"]), 0.1)
+                duration = (
+                    float(system["base_duration"])
+                    * min(1.5, max(0.25, balance["deficit_mm"] / capacity))
+                    * moisture_factor
+                )
+                inputs["duration_basis"] = "water_balance_and_base_duration"
+            inputs["expected_volume_liters"] = round(target_liters, 3)
+            reason = "et_water_balance"
+        else:
+            duration = float(system["base_duration"]) * moisture_factor
+            weather = inputs["weather"]
+            duration *= weather["factor"]
 
-        rain = self._read_numeric(system.get("rain_sensor", ""))
-        inputs["rain_mm"] = rain
-        exposure_factor = {"exposed": 1.0, "partial": 0.5, "covered": 0.0}.get(
-            system["exposure"], 1.0
-        )
-        rain_reach = exposure_factor * float(system["rain_reach_percent"]) / 100
-        if rain is not None and rain * rain_reach >= float(system["measured_rain_threshold"]):
-            return {"duration": 0, "reason": "measured_rain", "inputs": inputs}
+            rain = inputs["rain_mm"]
+            rain_reach = self._rain_reach_factor(system)
+            if rain is not None and rain * rain_reach >= float(
+                system["measured_rain_threshold"]
+            ):
+                return {"duration": 0, "reason": "measured_rain", "inputs": inputs}
 
-        if self._within_minimum_interval(system):
-            return {"duration": 0, "reason": "minimum_interval", "inputs": inputs}
-
-        return {
+        result = {
             "duration": self._bounded_duration(system, duration),
             "reason": reason,
             "inputs": inputs,
+        }
+        result["expected_volume_liters"] = self._expected_volume(
+            system, result["duration"]
+        ) or inputs.get("expected_volume_liters")
+        return result
+
+    def _decision_gates(
+        self, system: dict[str, Any], trigger: str
+    ) -> list[dict[str, Any]]:
+        local_today = dt_util.now().date()
+        paused_until = str(system.get("paused_until", "")).strip()
+        paused = bool(paused_until and local_today < date.fromisoformat(paused_until))
+        return [
+            {
+                "key": "system_disabled",
+                "passed": bool(system["enabled"]) or trigger == "manual",
+            },
+            {
+                "key": "maintenance_mode",
+                "passed": not bool(system.get("maintenance_mode")),
+            },
+            {
+                "key": "paused",
+                "passed": not paused or trigger == "manual",
+                "detail": paused_until or None,
+            },
+            {
+                "key": "minimum_interval",
+                "passed": not self._within_minimum_interval(system)
+                or trigger == "manual",
+            },
+            {
+                "key": "valve_entity_required",
+                "passed": bool(system.get("valve_entity")),
+            },
+        ]
+
+    def _environment_inputs(self, system: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "soil_temperatures": [
+                self._read_numeric(system.get("soil_temperature_sensor", "")),
+                self._read_numeric(system.get("soil_temperature_sensor_2", "")),
+            ],
+            "weather": self._weather_adjustment(system),
+            "rain_mm": self._read_numeric(system.get("rain_sensor", "")),
+        }
+
+    async def async_preview_decision(self, system_id: str) -> dict[str, Any]:
+        """Return a complete, read-only explanation of the next scheduled decision."""
+        system = self._get_system(system_id)
+        decision = self._calculate_decision(system, "schedule")
+        return {
+            **decision,
+            "will_run": decision["duration"] > 0,
+            "generated_at": datetime.now(UTC).isoformat(),
         }
 
     async def _async_execute_run(
@@ -352,10 +546,11 @@ class WateringManager:
     ) -> None:
         """Run valve cycles with persisted recovery state and verified shutdown."""
         system_id = system["id"]
-        total_seconds = int(round(float(decision["duration"]) * 60))
+        total_seconds = round(float(decision["duration"]) * 60)
         cycles = max(1, int(system["soak_cycles"]))
         cycle_seconds = max(1, total_seconds // cycles)
         started = datetime.now(UTC)
+        meter_start = self._read_cumulative_meter(system)
         loop = asyncio.get_running_loop()
         valve_opened_at: float | None = None
         total_open_seconds = 0.0
@@ -414,17 +609,34 @@ class WateringManager:
                 if current_flow_lpm is not None:
                     total_volume_liters += current_flow_lpm * cycle_open_seconds / 60
             actual = total_open_seconds / 60
+            meter_end = self._read_cumulative_meter(system)
+            exact_volume = self._meter_delta_liters(meter_start, meter_end)
             finished_decision = dict(decision)
             finished_decision["reason"] = final_reason
             finished_decision["actual_duration"] = round(actual, 1)
-            finished_decision["water_volume_liters"] = (
-                round(total_volume_liters, 2) if volume_available else None
-            )
+            if exact_volume is not None:
+                finished_decision["water_volume_liters"] = round(exact_volume, 3)
+                finished_decision["water_volume_source"] = "cumulative_meter"
+            elif volume_available:
+                finished_decision["water_volume_liters"] = round(total_volume_liters, 3)
+                finished_decision["water_volume_source"] = "flow_estimate"
+            elif self._normal_flow_lpm(system):
+                finished_decision["water_volume_liters"] = round(
+                    self._normal_flow_lpm(system) * actual, 3
+                )
+                finished_decision["water_volume_source"] = "flow_estimate"
+            else:
+                finished_decision["water_volume_liters"] = None
+                finished_decision["water_volume_source"] = None
             system["last_run_at"] = started.isoformat()
             system["last_duration"] = finished_decision["actual_duration"]
             system["last_reason"] = final_reason
             self.active_runs.pop(system_id, None)
             self.persisted_runs.pop(system_id, None)
+            if status == "completed":
+                self._apply_water_to_balance(
+                    system, finished_decision["water_volume_liters"]
+                )
             await self._async_log(system, trigger, status, finished_decision)
             if status == "completed":
                 await self._async_notify_user(
@@ -454,7 +666,13 @@ class WateringManager:
             "purpose": purpose,
             "started_at": now.isoformat(),
             "deadline_at": (
-                now + timedelta(seconds=min(planned_seconds, int(float(system["emergency_max_runtime"]) * 60)))
+                now
+                + timedelta(
+                    seconds=min(
+                        planned_seconds,
+                        int(float(system["emergency_max_runtime"]) * 60),
+                    )
+                )
             ).isoformat(),
         }
         await self._async_save()
@@ -498,14 +716,18 @@ class WateringManager:
             if system_id not in self.persisted_runs:
                 return
             await self._async_close_and_verify(system)
-            await self._async_notify_user(system, "failure", "emergency_runtime_exceeded")
-            task = self.active_runs.get(system_id) or self._calibration_tasks.get(system_id)
+            await self._async_notify_user(
+                system, "failure", "emergency_runtime_exceeded"
+            )
+            task = self.active_runs.get(system_id) or self._calibration_tasks.get(
+                system_id
+            )
             if task and task is not asyncio.current_task():
                 self._watchdog_failures.add(system_id)
                 task.cancel()
         except asyncio.CancelledError:
             raise
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001 - watchdog handles every failure
             self._create_repair_notification(system, str(err))
             await self._async_notify_user(system, "failure", str(err))
         finally:
@@ -634,7 +856,9 @@ class WateringManager:
             try:
                 await self._async_close_and_verify(system)
             except Exception as err:
-                _LOGGER.exception("Could not recover interrupted valve %s", system["valve_entity"])
+                _LOGGER.exception(
+                    "Could not recover interrupted valve %s", system["valve_entity"]
+                )
                 self._create_repair_notification(system, str(err))
                 continue
             if system_id in self.systems:
@@ -643,7 +867,9 @@ class WateringManager:
                 with suppress(ValueError, TypeError):
                     actual = max(
                         0.0,
-                        (datetime.now(UTC) - datetime.fromisoformat(started_at)).total_seconds()
+                        (
+                            datetime.now(UTC) - datetime.fromisoformat(started_at)
+                        ).total_seconds()
                         / 60,
                     )
                 decision = {
@@ -654,7 +880,9 @@ class WateringManager:
                     "inputs": {"recovery": recovery},
                 }
                 await self._async_log(system, "recovery", "failed", decision)
-                await self._async_notify_user(system, "failure", "interrupted_by_restart")
+                await self._async_notify_user(
+                    system, "failure", "interrupted_by_restart"
+                )
 
     async def _async_notify_user(
         self,
@@ -668,9 +896,7 @@ class WateringManager:
             f"Πότισμα · {system['name']}" if greek else f"Watering · {system['name']}"
         )
         reason_text = reason.replace("_", " ")
-        message = (
-            f"Συμβάν: {reason_text}" if greek else f"Event: {reason_text}"
-        )
+        message = f"Συμβάν: {reason_text}" if greek else f"Event: {reason_text}"
         if detail:
             message += f" · {detail}"
         if level in {"failure", "warning"}:
@@ -701,9 +927,7 @@ class WateringManager:
             f"watering_manager_critical_{system.get('id', 'unknown')}",
         )
 
-    async def async_test_notification(
-        self, system_id: str, destination: str
-    ) -> None:
+    async def async_test_notification(self, system_id: str, destination: str) -> None:
         system = self._get_system(system_id)
         configured = {
             str(item.get("destination"))
@@ -785,6 +1009,8 @@ class WateringManager:
             raise ValueError("calibration_result_required")
         result = calibration["result"]
         if calibration["kind"] == "flow":
+            system["normal_flow_rate"] = result["normal_flow_lpm"]
+            system["flow_tolerance_percent"] = result["tolerance_percent"]
             system["flow_minimum"] = result["suggested_minimum"]
             system["flow_maximum"] = result["suggested_maximum"]
         else:
@@ -817,6 +1043,10 @@ class WateringManager:
             state = self.hass.states.get(system["flow_sensor"])
             unit = state.attributes.get("unit_of_measurement") if state else None
             average = sum(readings) / len(readings)
+            normal_lpm = self._flow_to_liters_per_minute(average, unit)
+            if normal_lpm is None:
+                raise RuntimeError("flow_unit_unsupported")
+            tolerance = float(system.get("flow_tolerance_percent", 30))
             calibration.update(
                 {
                     "status": "completed",
@@ -828,6 +1058,8 @@ class WateringManager:
                         "maximum_sample": round(max(readings), 3),
                         "samples": len(readings),
                         "unit": unit,
+                        "normal_flow_lpm": round(normal_lpm, 3),
+                        "tolerance_percent": tolerance,
                         "suggested_minimum": round(average * 0.7, 3),
                         "suggested_maximum": round(average * 1.3, 3),
                     },
@@ -836,13 +1068,13 @@ class WateringManager:
         except asyncio.CancelledError:
             calibration.update(status="failed", phase="cancelled", error="cancelled")
             raise
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001 - calibration reports hardware failures
             calibration.update(status="failed", phase="failed", error=str(err))
             await self._async_notify_user(system, "failure", f"flow_calibration_{err}")
         finally:
             try:
                 await self._async_close_and_verify(system)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001 - valve closure is mandatory
                 close_failed = True
                 calibration.update(status="failed", phase="failed", error=str(err))
                 self._create_repair_notification(system, str(err))
@@ -850,7 +1082,9 @@ class WateringManager:
             self._calibration_tasks.pop(system_id, None)
             await self._async_changed()
             if close_failed:
-                await self._async_notify_user(system, "failure", "valve_failed_to_close")
+                await self._async_notify_user(
+                    system, "failure", "valve_failed_to_close"
+                )
 
     async def _async_duration_calibration(self, system: dict[str, Any]) -> None:
         system_id = system["id"]
@@ -864,7 +1098,9 @@ class WateringManager:
             self._read_sensor(system.get("moisture_sensor_2", ""), system),
         ]
         if not any(item.get("valid") for item in before):
-            calibration.update(status="failed", phase="failed", error="sensors_unavailable")
+            calibration.update(
+                status="failed", phase="failed", error="sensors_unavailable"
+            )
             await self._async_changed()
             self._calibration_tasks.pop(system_id, None)
             return
@@ -927,13 +1163,15 @@ class WateringManager:
         except asyncio.CancelledError:
             calibration.update(status="failed", phase="cancelled", error="cancelled")
             raise
-        except Exception as err:
+        except Exception as err:  # noqa: BLE001 - calibration reports hardware failures
             calibration.update(status="failed", phase="failed", error=str(err))
-            await self._async_notify_user(system, "failure", f"duration_calibration_{err}")
+            await self._async_notify_user(
+                system, "failure", f"duration_calibration_{err}"
+            )
         finally:
             try:
                 await self._async_close_and_verify(system)
-            except Exception as err:
+            except Exception as err:  # noqa: BLE001 - valve closure is mandatory
                 calibration.update(status="failed", phase="failed", error=str(err))
                 self._create_repair_notification(system, str(err))
             self.persisted_runs.pop(system_id, None)
@@ -982,7 +1220,12 @@ class WateringManager:
         for index, key in enumerate(("moisture_sensor_1", "moisture_sensor_2"), 1):
             entity_id = system.get(key, "")
             reading = self._read_sensor(entity_id, system)
-            add(f"moisture_{index}", bool(entity_id), reading.get("valid", False), reading)
+            add(
+                f"moisture_{index}",
+                bool(entity_id),
+                reading.get("valid", False),
+                reading,
+            )
         for index, key in enumerate(
             ("soil_temperature_sensor", "soil_temperature_sensor_2"), 1
         ):
@@ -1002,6 +1245,17 @@ class WateringManager:
                 bool(state and state.state not in {"unknown", "unavailable"}),
                 state.state if state else None,
             )
+        meter_entity = system.get("water_meter_sensor", "")
+        meter = self._read_cumulative_meter(system)
+        add("water_meter", bool(meter_entity), meter is not None, meter)
+        et0 = self._read_et0(system)
+        add(
+            "et0",
+            bool(system.get("et0_sensor")),
+            et0["valid"],
+            et0,
+            required=bool(system.get("water_balance_enabled")),
+        )
         targets = system.get("notification_targets", [])
         available_targets = sum(
             1
@@ -1016,13 +1270,11 @@ class WateringManager:
             bool(targets) and available_targets == len(targets),
             f"{available_targets}/{len(targets)}" if targets else None,
         )
-        critical = any(
-            item["status"] == "error" and item["key"] == "valve" for item in checks
-        ) or system["id"] in self.persisted_runs
-        no_moisture_in_auto = system.get("mode") == "auto" and not any(
-            system.get(key) for key in ("moisture_sensor_1", "moisture_sensor_2")
+        critical = (
+            any(item["status"] == "error" and item["key"] == "valve" for item in checks)
+            or system["id"] in self.persisted_runs
         )
-        warning = any(item["status"] == "error" for item in checks) or no_moisture_in_auto
+        warning = any(item["status"] == "error" for item in checks)
         return {
             "status": "critical" if critical else ("warning" if warning else "healthy"),
             "checks": checks,
@@ -1033,6 +1285,8 @@ class WateringManager:
                 if item.get("system_id") == system["id"]
             ),
             "calibration": self.calibrations.get(system["id"]),
+            "maintenance_mode": bool(system.get("maintenance_mode")),
+            "water_balance": self.water_balances.get(system["id"]),
         }
 
     def _notification_destination_available(self, destination: str) -> bool:
@@ -1053,6 +1307,7 @@ class WateringManager:
     async def _async_scheduler_tick(self, now: datetime) -> None:
         """Start systems whose local schedule matches the current minute."""
         local_now = dt_util.as_local(now)
+        await self._async_update_water_balances()
         schedule_key = local_now.strftime("%Y-%m-%d %H:%M")
         current_time = local_now.strftime("%H:%M")
         for system_id, system in list(self.systems.items()):
@@ -1106,9 +1361,7 @@ class WateringManager:
         except ValueError:
             return None
 
-    def _validate_flow(
-        self, system: dict[str, Any]
-    ) -> tuple[float | None, str | None]:
+    def _validate_flow(self, system: dict[str, Any]) -> tuple[float | None, str | None]:
         """Abort when a configured flow sensor reports an unsafe value."""
         entity_id = system.get("flow_sensor", "")
         if not entity_id:
@@ -1117,11 +1370,20 @@ class WateringManager:
         flow = self._read_numeric(entity_id)
         if flow is None:
             raise RuntimeError("flow_sensor_unavailable")
-        if flow < float(system["flow_minimum"]):
-            raise RuntimeError("flow_too_low")
-        if flow > float(system["flow_maximum"]):
-            raise RuntimeError("flow_too_high")
         unit = state.attributes.get("unit_of_measurement") if state else None
+        normal_lpm = self._normal_flow_lpm(system)
+        current_lpm = self._flow_to_liters_per_minute(flow, unit)
+        if normal_lpm and current_lpm is not None:
+            tolerance = float(system.get("flow_tolerance_percent", 30)) / 100
+            if current_lpm < normal_lpm * (1 - tolerance):
+                raise RuntimeError("flow_too_low")
+            if current_lpm > normal_lpm * (1 + tolerance):
+                raise RuntimeError("flow_too_high")
+        else:
+            if flow < float(system["flow_minimum"]):
+                raise RuntimeError("flow_too_low")
+            if flow > float(system["flow_maximum"]):
+                raise RuntimeError("flow_too_high")
         return flow, unit
 
     @staticmethod
@@ -1144,6 +1406,42 @@ class WateringManager:
         }
         factor = factors.get(normalized)
         return flow * factor if factor is not None else None
+
+    def _read_cumulative_meter(self, system: dict[str, Any]) -> dict[str, Any] | None:
+        entity_id = system.get("water_meter_sensor", "")
+        if not entity_id:
+            return None
+        state = self.hass.states.get(entity_id)
+        value = self._read_numeric(entity_id)
+        if state is None or value is None:
+            return None
+        unit = state.attributes.get("unit_of_measurement")
+        factor = self._volume_unit_to_liters(unit)
+        if factor is None:
+            return None
+        return {"value": value, "unit": unit, "liters": value * factor}
+
+    @staticmethod
+    def _volume_unit_to_liters(unit: str | None) -> float | None:
+        normalized = str(unit or "").strip().lower().replace("³", "3").replace(" ", "")
+        return {
+            "l": 1.0,
+            "liter": 1.0,
+            "litre": 1.0,
+            "ml": 0.001,
+            "m3": 1000.0,
+            "gal": 3.785411784,
+            "ft3": 28.316846592,
+        }.get(normalized)
+
+    @staticmethod
+    def _meter_delta_liters(
+        start: dict[str, Any] | None, end: dict[str, Any] | None
+    ) -> float | None:
+        if not start or not end or start.get("unit") != end.get("unit"):
+            return None
+        delta = float(end["liters"]) - float(start["liters"])
+        return delta if delta >= 0 else None
 
     def _weather_adjustment(self, system: dict[str, Any]) -> dict[str, Any]:
         entity_id = system.get("weather_entity", "")
@@ -1171,6 +1469,156 @@ class WateringManager:
             "condition": condition,
             "temperature": temperature,
         }
+
+    @staticmethod
+    def _rain_reach_factor(system: dict[str, Any]) -> float:
+        exposure = {"exposed": 1.0, "partial": 0.5, "covered": 0.0}.get(
+            system.get("exposure"), 1.0
+        )
+        return exposure * float(system.get("rain_reach_percent", 100)) / 100
+
+    @staticmethod
+    def _pot_area_m2(system: dict[str, Any]) -> float:
+        count = float(system.get("pot_count", 1))
+        if system.get("pot_shape") == "rectangular":
+            area = (
+                float(system.get("pot_length_cm", 0))
+                * float(system.get("pot_width_cm", 0))
+                / 10000
+            )
+        else:
+            radius_m = float(system.get("pot_diameter_cm", 0)) / 200
+            area = pi * radius_m * radius_m
+        return max(0.0, area * count)
+
+    def _read_et0(self, system: dict[str, Any]) -> dict[str, Any]:
+        entity_id = system.get("et0_sensor", "")
+        value = self._read_numeric(entity_id)
+        state = self.hass.states.get(entity_id) if entity_id else None
+        unit = state.attributes.get("unit_of_measurement") if state else None
+        normalized = str(unit or "").lower().replace(" ", "")
+        valid_unit = normalized in {"mm", "mm/day", "mm/d", "mm/ημέρα"}
+        return {
+            "entity_id": entity_id,
+            "value": value,
+            "unit": unit,
+            "valid": value is not None and value >= 0 and valid_unit,
+            "reason": None
+            if value is not None and value >= 0 and valid_unit
+            else "et0_sensor_unavailable_or_unit_invalid",
+        }
+
+    def _ensure_water_balance(self, system_id: str) -> dict[str, Any]:
+        return self.water_balances.setdefault(
+            system_id,
+            {
+                "date": None,
+                "deficit_mm": 0.0,
+                "last_et0_mm": None,
+                "last_etc_mm": None,
+                "effective_rain_mm": None,
+                "quality": "not_started",
+                "skipped_days": 0,
+                "updated_at": None,
+            },
+        )
+
+    def _balance_for_today(self, system: dict[str, Any]) -> dict[str, Any]:
+        current = deepcopy(self._ensure_water_balance(system["id"]))
+        today = dt_util.now().date()
+        if current.get("date") == today.isoformat():
+            return current
+        et0 = self._read_et0(system)
+        if not et0["valid"]:
+            current.update(
+                quality="et0_unavailable", last_et0_mm=None, last_etc_mm=None
+            )
+            return current
+        previous_date = (
+            date.fromisoformat(current["date"]) if current.get("date") else None
+        )
+        skipped = max(0, (today - previous_date).days - 1) if previous_date else 0
+        etc = float(et0["value"]) * float(system["crop_coefficient"])
+        rain = self._read_numeric(system.get("rain_sensor", ""))
+        effective_rain = max(0.0, rain or 0.0) * self._rain_reach_factor(system)
+        capacity = float(system["water_balance_capacity_mm"])
+        current.update(
+            date=today.isoformat(),
+            deficit_mm=round(
+                max(
+                    0.0,
+                    min(
+                        capacity,
+                        float(current.get("deficit_mm", 0)) + etc - effective_rain,
+                    ),
+                ),
+                3,
+            ),
+            last_et0_mm=round(float(et0["value"]), 3),
+            last_etc_mm=round(etc, 3),
+            effective_rain_mm=round(effective_rain, 3),
+            quality="gap_detected" if skipped else "good",
+            skipped_days=skipped,
+            updated_at=datetime.now(UTC).isoformat(),
+        )
+        return current
+
+    async def _async_update_water_balances(self) -> None:
+        changed = False
+        for system in self.systems.values():
+            if not system.get("water_balance_enabled"):
+                continue
+            calculated = self._balance_for_today(system)
+            if calculated != self.water_balances.get(system["id"]):
+                self.water_balances[system["id"]] = calculated
+                changed = True
+        if changed:
+            await self._async_changed()
+
+    def _water_balance_preview(self, system: dict[str, Any]) -> dict[str, Any]:
+        balance = self._balance_for_today(system)
+        et0 = self._read_et0(system)
+        area = self._pot_area_m2(system)
+        efficiency = float(system["irrigation_efficiency_percent"]) / 100
+        target = float(balance.get("deficit_mm", 0)) * area / efficiency
+        return {
+            **balance,
+            "available": et0["valid"],
+            "et0": et0,
+            "crop_coefficient": float(system["crop_coefficient"]),
+            "pot_area_m2": round(area, 4),
+            "irrigation_efficiency_percent": float(
+                system["irrigation_efficiency_percent"]
+            ),
+            "target_liters": round(target, 3),
+            "flow_lpm": self._normal_flow_lpm(system),
+        }
+
+    @staticmethod
+    def _normal_flow_lpm(system: dict[str, Any]) -> float | None:
+        value = float(system.get("normal_flow_rate", 0) or 0)
+        return value if value > 0 else None
+
+    def _expected_volume(self, system: dict[str, Any], duration: float) -> float | None:
+        flow = self._normal_flow_lpm(system)
+        return round(flow * float(duration), 3) if flow else None
+
+    def _apply_water_to_balance(
+        self, system: dict[str, Any], liters: float | None
+    ) -> None:
+        if not system.get("water_balance_enabled") or liters is None:
+            return
+        area = self._pot_area_m2(system)
+        efficiency = float(system["irrigation_efficiency_percent"]) / 100
+        if area <= 0:
+            return
+        applied_mm = liters * efficiency / area
+        balance = self._ensure_water_balance(system["id"])
+        balance["deficit_mm"] = round(
+            max(0.0, float(balance.get("deficit_mm", 0)) - applied_mm), 3
+        )
+        balance["last_irrigation_mm"] = round(applied_mm, 3)
+        balance["updated_at"] = datetime.now(UTC).isoformat()
 
     def _within_minimum_interval(self, system: dict[str, Any]) -> bool:
         last_run = system.get("last_run_at")
@@ -1214,24 +1662,129 @@ class WateringManager:
         status: str,
         decision: dict[str, Any],
     ) -> None:
-        self.logs.append(
-            {
-                "id": uuid4().hex,
-                "system_id": system["id"],
-                "system_name": system["name"],
-                "timestamp": datetime.now(UTC).isoformat(),
-                "trigger": trigger,
-                "mode": system["mode"],
-                "status": status,
-                "reason": decision["reason"],
-                "planned_duration": decision["duration"],
-                "actual_duration": decision.get("actual_duration"),
-                "water_volume_liters": decision.get("water_volume_liters"),
-                "inputs": decision.get("inputs", {}),
-            }
-        )
+        entry = {
+            "id": uuid4().hex,
+            "system_id": system["id"],
+            "system_name": system["name"],
+            "timestamp": datetime.now(UTC).isoformat(),
+            "trigger": trigger,
+            "mode": system["mode"],
+            "status": status,
+            "reason": decision["reason"],
+            "planned_duration": decision["duration"],
+            "actual_duration": decision.get("actual_duration"),
+            "water_volume_liters": decision.get("water_volume_liters"),
+            "water_volume_source": decision.get("water_volume_source"),
+            "inputs": decision.get("inputs", {}),
+        }
+        self.logs.append(entry)
+        self._update_aggregate(entry)
         self.logs = self.logs[-LOG_LIMIT:]
         await self._async_changed()
+
+    def _rebuild_aggregates(self) -> None:
+        self.aggregates = {}
+        for entry in self.logs:
+            self._update_aggregate(entry)
+
+    def _update_aggregate(self, entry: dict[str, Any]) -> None:
+        if entry.get("trigger") not in {"schedule", "manual", "recovery"}:
+            return
+        timestamp = datetime.fromisoformat(entry["timestamp"])
+        day = dt_util.as_local(timestamp).date().isoformat()
+        system_id = entry["system_id"]
+        bucket = self.aggregates.setdefault(system_id, {}).setdefault(
+            day,
+            {
+                "date": day,
+                "runs": 0,
+                "completed": 0,
+                "skipped": 0,
+                "failed": 0,
+                "stopped": 0,
+                "duration_minutes": 0.0,
+                "water_liters": 0.0,
+                "volume_known_runs": 0,
+                "exact_volume_runs": 0,
+                "estimated_volume_runs": 0,
+                "air_temperature_sum": 0.0,
+                "air_temperature_count": 0,
+                "soil_temperature_1_sum": 0.0,
+                "soil_temperature_1_count": 0,
+                "soil_temperature_2_sum": 0.0,
+                "soil_temperature_2_count": 0,
+                "moisture_sum": 0.0,
+                "moisture_count": 0,
+            },
+        )
+        bucket["runs"] += 1
+        status = entry.get("status")
+        if status in {"completed", "skipped", "failed", "stopped"}:
+            bucket[status] += 1
+        duration = entry.get("actual_duration")
+        if isinstance(duration, (int, float)):
+            bucket["duration_minutes"] = round(bucket["duration_minutes"] + duration, 3)
+        volume = entry.get("water_volume_liters")
+        if isinstance(volume, (int, float)):
+            bucket["water_liters"] = round(bucket["water_liters"] + volume, 3)
+            bucket["volume_known_runs"] += 1
+            source = entry.get("water_volume_source")
+            if source == "cumulative_meter":
+                bucket["exact_volume_runs"] += 1
+            elif source == "flow_estimate":
+                bucket["estimated_volume_runs"] += 1
+        inputs = entry.get("inputs", {})
+        temperature = inputs.get("weather", {}).get("temperature")
+        if isinstance(temperature, (int, float)):
+            bucket["air_temperature_sum"] += temperature
+            bucket["air_temperature_count"] += 1
+        for index, value in enumerate(inputs.get("soil_temperatures", [])[:2], 1):
+            if isinstance(value, (int, float)):
+                bucket[f"soil_temperature_{index}_sum"] += value
+                bucket[f"soil_temperature_{index}_count"] += 1
+        for reading in inputs.get("moisture", []):
+            if reading.get("valid") and isinstance(reading.get("value"), (int, float)):
+                bucket["moisture_sum"] += reading["value"]
+                bucket["moisture_count"] += 1
+
+    def total_water_liters(self, system_id: str) -> float:
+        return round(
+            sum(
+                day.get("water_liters", 0)
+                for day in self.aggregates.get(system_id, {}).values()
+            ),
+            3,
+        )
+
+    def total_duration_minutes(self, system_id: str) -> float:
+        return round(
+            sum(
+                day.get("duration_minutes", 0)
+                for day in self.aggregates.get(system_id, {}).values()
+            ),
+            3,
+        )
+
+    def next_run(self, system_id: str) -> datetime | None:
+        system = self.systems.get(system_id)
+        if not system or not system.get("enabled") or system.get("maintenance_mode"):
+            return None
+        try:
+            hour, minute = (int(part) for part in system["start_time"].split(":"))
+        except (ValueError, AttributeError):
+            return None
+        now = dt_util.now()
+        paused_until = str(system.get("paused_until", "")).strip()
+        resume_date = date.fromisoformat(paused_until) if paused_until else now.date()
+        for offset in range(15):
+            candidate = (now + timedelta(days=offset)).replace(
+                hour=hour, minute=minute, second=0, microsecond=0
+            )
+            if candidate < now or candidate.date() < resume_date:
+                continue
+            if candidate.weekday() in system.get("days", []):
+                return dt_util.as_utc(candidate)
+        return None
 
     async def _async_changed(self) -> None:
         await self._async_save()
@@ -1245,6 +1798,9 @@ class WateringManager:
                 "active_runs": self.persisted_runs,
                 "pending_checks": self.pending_checks,
                 "calibrations": self.calibrations,
+                "water_balances": self.water_balances,
+                "aggregates": self.aggregates,
+                "schema_version": DATA_SCHEMA_VERSION,
             }
         )
 

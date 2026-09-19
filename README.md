@@ -4,7 +4,7 @@ Watering Manager is a Home Assistant custom integration for managing multiple ir
 
 > Status: early development release. Test with supervision before relying on it unattended.
 
-Current development version: **0.2.1**
+Current development version: **0.3.0**
 
 ## Current features
 
@@ -29,6 +29,14 @@ Current development version: **0.2.1**
 - Delayed post-watering verification for each configured moisture sensor.
 - Guided flow and dry-to-wet duration calibration with explicit Apply actions.
 - Mobile-friendly Diagnostics page with live component health and pending checks.
+- Plant-demand profiles, crop coefficient (Kc), pot geometry and irrigation efficiency.
+- Optional FAO-style daily water balance using `ETc = ET0 × Kc`.
+- Normal-flow calibration with a configurable percentage tolerance band.
+- Exact run volume from a cumulative water meter, with calibrated-flow estimation as fallback.
+- Pause-until date and a maintenance mode with a controlled valve test.
+- Native Home Assistant sensors, binary sensors and switches for every watering system.
+- Persistent daily aggregates that are not limited by the 500-entry detailed log.
+- A read-only decision preview showing every gate and calculation input before watering.
 
 ## Installation with HACS
 
@@ -43,19 +51,24 @@ No dashboard card or YAML package is required.
 
 ## Automatic watering logic
 
-Soil moisture is the primary signal. Current weather modifies the calculated duration, while a configured measured-rain entity can block a run according to the balcony exposure settings.
+Without ET water balance, soil moisture is the primary signal. Current weather modifies the calculated duration, while a configured measured-rain entity can block a run according to the balcony exposure settings.
+
+With ET water balance enabled, a daily ET0 sensor in `mm` or `mm/day` is required. Watering Manager calculates `ETc = ET0 × Kc`, subtracts measured rain according to exposure and rain reach, and converts the remaining millimetres to litres from the configured pot surface area. Calibrated normal flow converts the target litres to runtime. Current-weather correction is not applied a second time in ET mode.
 
 - Both sensors wet: skip.
 - Both sensors dry: use the base duration and moisture deficit.
 - One dry and one wet: use the configured short conflict duration.
 - One valid sensor: use the valid reading and log the missing sensor.
-- No valid sensors: skip, or use the base duration if explicitly configured.
+- No moisture sensors selected: ET and the remaining safety limits may operate without them.
+- Configured sensors unavailable: skip, or use the base duration if explicitly configured.
 
 The weather entity is a correction only. It is not treated as proof that rain reached the pots.
 
 ## Important sensor notes
 
-The moisture sensor values must be numeric percentages from `0` to `100`. The measured-rain entity is expected to report millimetres accumulated during the previous 24 hours.
+The moisture sensor values must be numeric percentages from `0` to `100`. The measured-rain entity is expected to report millimetres accumulated during the previous 24 hours. A cumulative meter must report `L`, `mL`, `m³`, `gal` or `ft³`; use a meter dedicated to the selected irrigation zone when concurrent water users could affect its delta.
+
+The built-in low/medium/high Kc values are starting points, not automatic plant-species identification. Calibrate them for the plant, substrate, season and microclimate.
 
 ## Safety
 

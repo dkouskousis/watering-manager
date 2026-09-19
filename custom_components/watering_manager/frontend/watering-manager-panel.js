@@ -1,4 +1,4 @@
-const WM_VERSION = "0.2.1";
+const WM_VERSION = "0.3.0";
 
 const WM_TRANSLATIONS = {
   en: {
@@ -110,6 +110,41 @@ const WM_TRANSLATIONS = {
     flowCalibrationSeconds: "Διάρκεια βαθμονόμησης ροής", durationCalibrationMinutes: "Δοκιμαστικός χρόνος ποτίσματος", durationCalibrationWait: "Αναμονή απορρόφησης πριν τη μέτρηση",
   },
 };
+
+Object.assign(WM_TRANSLATIONS.en, {
+  preview: "Decision preview", refreshPreview: "Recalculate", willWater: "Will water", willNotWater: "Will not water",
+  decisionGates: "Decision gates", decisionInputs: "Calculation inputs", expectedVolume: "Expected volume", durationBasis: "Duration basis",
+  plantAndPot: "Plant & pot profile", plantProfile: "Plant water demand", low: "Low", medium: "Medium", high: "High", custom: "Custom",
+  cropCoefficient: "Crop coefficient (Kc)", potShape: "Pot shape", round: "Round", rectangular: "Rectangular", potCount: "Number of pots",
+  potDiameter: "Pot diameter", potLength: "Pot length", potWidth: "Pot width", irrigationEfficiency: "Irrigation efficiency",
+  waterBalance: "ET water balance", waterBalanceEnabled: "Use daily ET water balance", waterBalanceCapacity: "Maximum retained deficit", waterBalanceTrigger: "Watering trigger deficit",
+  et0: "Daily reference ET (ET0)", cumulativeMeter: "Cumulative water meter", normalFlow: "Calibrated normal flow", flowTolerance: "Allowed flow deviation",
+  pauseUntil: "Pause until", pauseHelp: "Scheduled watering is paused before this date and resumes at 00:00 on the selected date. Run now remains available.",
+  maintenanceMode: "Maintenance mode", maintenanceHelp: "Suspends schedules and normal Run now operations. Calibration, notification tests and the controlled valve test remain available.",
+  valveTest: "Test valve", valveTestSeconds: "Valve test duration", valveTestConfirm: "Maintenance test will open the valve briefly. Continue?",
+  year: "Year", all: "All", exactVolume: "Exact meter readings", estimatedVolume: "Flow estimates", dataQuality: "Data quality",
+  diagnosticWaterMeter: "Cumulative water meter", diagnosticEt0: "Reference ET (ET0)", currentDeficit: "Current water deficit", nextRun: "Next run",
+  etExplanation: "ET mode adds daily plant water use (ET0 × Kc), subtracts only measured rain that can reach the pots, and replaces the deficit with irrigation. Soil moisture remains a safety veto; it does not create fake rainfall data.",
+  optionalSensors: "Moisture sensors are optional. With none selected, ET and safety limits decide. If a configured sensor becomes unavailable, the selected sensor-failure policy applies.",
+  source: "Source", cumulative: "Cumulative meter", estimated: "Estimated from flow", profilePreset: "Profile presets are starting values. Adjust Kc for the plant and local conditions.",
+});
+Object.assign(WM_TRANSLATIONS.el, {
+  preview: "Προεπισκόπηση απόφασης", refreshPreview: "Νέος υπολογισμός", willWater: "Θα ποτίσει", willNotWater: "Δεν θα ποτίσει",
+  decisionGates: "Έλεγχοι απόφασης", decisionInputs: "Στοιχεία υπολογισμού", expectedVolume: "Αναμενόμενος όγκος", durationBasis: "Βάση διάρκειας",
+  plantAndPot: "Προφίλ φυτού και γλάστρας", plantProfile: "Ανάγκη φυτού σε νερό", low: "Χαμηλή", medium: "Μέτρια", high: "Υψηλή", custom: "Προσαρμοσμένη",
+  cropCoefficient: "Συντελεστής καλλιέργειας (Kc)", potShape: "Σχήμα γλάστρας", round: "Στρογγυλή", rectangular: "Ορθογώνια", potCount: "Πλήθος γλαστρών",
+  potDiameter: "Διάμετρος γλάστρας", potLength: "Μήκος γλάστρας", potWidth: "Πλάτος γλάστρας", irrigationEfficiency: "Απόδοση ποτίσματος",
+  waterBalance: "Ισοζύγιο νερού ET", waterBalanceEnabled: "Χρήση ημερήσιου ισοζυγίου ET", waterBalanceCapacity: "Μέγιστο έλλειμμα αποθήκευσης", waterBalanceTrigger: "Έλλειμμα ενεργοποίησης ποτίσματος",
+  et0: "Ημερήσια εξατμισοδιαπνοή αναφοράς (ET0)", cumulativeMeter: "Αθροιστικός μετρητής νερού", normalFlow: "Βαθμονομημένη φυσιολογική ροή", flowTolerance: "Επιτρεπτή απόκλιση ροής",
+  pauseUntil: "Παύση μέχρι", pauseHelp: "Το προγραμματισμένο πότισμα παραμένει σε παύση πριν από αυτή την ημερομηνία και επανέρχεται στις 00:00 της επιλεγμένης ημέρας. Το Πότισμα τώρα παραμένει διαθέσιμο.",
+  maintenanceMode: "Λειτουργία συντήρησης", maintenanceHelp: "Αναστέλλει τα προγράμματα και το κανονικό Πότισμα τώρα. Παραμένουν διαθέσιμες οι βαθμονομήσεις, οι δοκιμές ειδοποιήσεων και η ελεγχόμενη δοκιμή βάνας.",
+  valveTest: "Δοκιμή βάνας", valveTestSeconds: "Διάρκεια δοκιμής βάνας", valveTestConfirm: "Η δοκιμή συντήρησης θα ανοίξει για λίγο τη βάνα. Συνέχεια;",
+  year: "Έτος", all: "Όλα", exactVolume: "Ακριβείς μετρήσεις", estimatedVolume: "Εκτιμήσεις ροής", dataQuality: "Ποιότητα δεδομένων",
+  diagnosticWaterMeter: "Αθροιστικός μετρητής νερού", diagnosticEt0: "Εξατμισοδιαπνοή αναφοράς (ET0)", currentDeficit: "Τρέχον έλλειμμα νερού", nextRun: "Επόμενο πότισμα",
+  etExplanation: "Το ET προσθέτει καθημερινά την κατανάλωση του φυτού (ET0 × Kc), αφαιρεί μόνο τη μετρημένη βροχή που μπορεί να φτάσει στις γλάστρες και αναπληρώνει το έλλειμμα με πότισμα. Η υγρασία χώματος παραμένει δικλείδα ασφαλείας.",
+  optionalSensors: "Οι αισθητήρες υγρασίας είναι προαιρετικοί. Χωρίς αισθητήρα αποφασίζουν το ET και τα όρια ασφαλείας. Αν ένας επιλεγμένος αισθητήρας πάψει να είναι διαθέσιμος, εφαρμόζεται η πολιτική αποτυχίας αισθητήρων.",
+  source: "Πηγή", cumulative: "Αθροιστικός μετρητής", estimated: "Εκτίμηση από ροή", profilePreset: "Τα προφίλ είναι αρχικές τιμές. Ρύθμισε το Kc ανάλογα με το φυτό και τις τοπικές συνθήκες.",
+});
 
 const WM_HELP_LABELS = {
   mode: "mode", base_duration: "baseDuration", conflict_duration: "conflictDuration",
@@ -276,6 +311,34 @@ const WM_HELP = {
   },
 };
 
+Object.assign(WM_HELP_LABELS, {
+  plant_profile:"plantProfile", crop_coefficient:"cropCoefficient", pot_shape:"potShape", pot_count:"potCount",
+  pot_diameter_cm:"potDiameter", pot_length_cm:"potLength", pot_width_cm:"potWidth",
+  irrigation_efficiency_percent:"irrigationEfficiency", water_balance_enabled:"waterBalanceEnabled",
+  water_balance_capacity_mm:"waterBalanceCapacity", water_balance_trigger_mm:"waterBalanceTrigger",
+  et0_sensor:"et0", water_meter_sensor:"cumulativeMeter", normal_flow_rate:"normalFlow",
+  flow_tolerance_percent:"flowTolerance", paused_until:"pauseUntil", maintenance_mode:"maintenanceMode",
+  valve_test_seconds:"valveTestSeconds",
+  post_check_enabled:"postCheckEnabled",
+});
+Object.assign(WM_HELP, {
+  crop_coefficient:{el:"Ο Kc μετατρέπει την ημερήσια ET0 σε εκτιμώμενη κατανάλωση του φυτού: ETc = ET0 × Kc. Είναι παράμετρος βαθμονόμησης και όχι αυτόματη αναγνώριση είδους.",en:"Kc converts daily ET0 to estimated plant use: ETc = ET0 × Kc. It is a calibration parameter, not automatic species identification."},
+  plant_profile:{el:"Αρχική κατηγορία ζήτησης νερού. Χαμηλή=Kc 0,5, μέτρια=0,8, υψηλή=1,1. Μετά μπορείς να διορθώσεις το Kc για το συγκεκριμένο φυτό.",en:"Starting water-demand category. Low=Kc 0.5, medium=0.8, high=1.1. You can then tune Kc for the actual plant."},
+  pot_shape:{el:"Οι διαστάσεις και το πλήθος υπολογίζουν τη συνολική επιφάνεια χώματος. Επειδή 1 mm πάνω σε 1 m² ισούται με 1 λίτρο, η επιφάνεια μετατρέπει το έλλειμμα ET σε όγκο νερού.",en:"Dimensions and count calculate total soil surface area. Since 1 mm over 1 m² equals 1 litre, area converts ET deficit to water volume."},
+  irrigation_efficiency_percent:{el:"Το ποσοστό του νερού που εκτιμάται ότι φτάνει στη ριζόσφαιρα. Μικρότερη απόδοση απαιτεί περισσότερο εφαρμοζόμενο νερό. Για στάγδην ξεκίνα περίπου από 90% και βαθμονόμησε.",en:"Estimated percentage of applied water reaching the root zone. Lower efficiency requires more delivered water. For drip irrigation, start near 90% and calibrate."},
+  water_balance_enabled:{el:"Ενεργοποιεί ημερήσιο ισοζύγιο: προσθήκη ETc, αφαίρεση αποτελεσματικής μετρημένης βροχής και αφαίρεση του πραγματικού ή εκτιμώμενου ποτίσματος.",en:"Enables a daily balance: add ETc, subtract effective measured rain, then subtract actual or estimated irrigation."},
+  water_balance_capacity_mm:{el:"Ανώτατο έλλειμμα που μπορεί να συσσωρευτεί. Περιορίζει την ανάκτηση μετά από μεγάλα κενά και αποφεύγει υπερβολικό πότισμα.",en:"Maximum deficit allowed to accumulate. It limits catch-up after long gaps and prevents excessive watering."},
+  water_balance_trigger_mm:{el:"Το Auto δεν ποτίζει από ET πριν το συσσωρευμένο έλλειμμα φτάσει αυτή την τιμή.",en:"Auto does not irrigate from ET until accumulated deficit reaches this value."},
+  et0_sensor:{el:"Sensor με ημερήσια ET0 σε mm ή mm/day. Η εφαρμογή δεν κατασκευάζει ET0 από μία απλή θερμοκρασία, γιατί αυτό θα έδινε ψευδή ακρίβεια.",en:"Sensor providing daily ET0 in mm or mm/day. The app does not fabricate ET0 from temperature alone because that would imply false precision."},
+  water_meter_sensor:{el:"Αθροιστικός μετρητής όγκου σε L, m³, mL, gal ή ft³. Η διαφορά αρχής–τέλους δίνει τον ακριβέστερο όγκο και έχει προτεραιότητα από την εκτίμηση ροής.",en:"Cumulative volume meter in L, m³, mL, gal or ft³. The start-to-end difference provides the most accurate volume and takes priority over flow estimates."},
+  normal_flow_rate:{el:"Φυσιολογική ροή σε L/min που προκύπτει από τη βαθμονόμηση. Χρησιμοποιείται για διάρκεια ET, εκτίμηση όγκου και ανίχνευση απόκλισης.",en:"Normal flow in L/min established by calibration. It is used for ET duration, volume estimates and deviation detection."},
+  flow_tolerance_percent:{el:"Επιτρεπτή ποσοστιαία απόκλιση γύρω από τη φυσιολογική ροή. Εκτός ορίων η εκτέλεση σταματά ως πιθανό βούλωμα, κλειστή παροχή ή διαρροή.",en:"Allowed percentage deviation around normal flow. Outside this band the run stops as a possible blockage, closed supply or leak."},
+  paused_until:{el:WM_TRANSLATIONS.el.pauseHelp,en:WM_TRANSLATIONS.en.pauseHelp},
+  maintenance_mode:{el:WM_TRANSLATIONS.el.maintenanceHelp,en:WM_TRANSLATIONS.en.maintenanceHelp},
+  valve_test_seconds:{el:"Σύντομος ελεγχόμενος παλμός βάνας, από 2 έως 60 δευτερόλεπτα, με watchdog, έλεγχο ροής και επιβεβαίωση κλεισίματος.",en:"Short controlled valve pulse from 2 to 60 seconds with watchdog, flow validation and verified closure."},
+  post_check_enabled:{el:"Μετά το πότισμα περιμένει τον χρόνο απορρόφησης και συγκρίνει ξανά κάθε διαθέσιμο αισθητήρα υγρασίας. Προειδοποιεί αν η αύξηση είναι μικρότερη από το όριο.",en:"After watering, waits for absorption and compares every available moisture sensor again. It warns if the increase is below the threshold."},
+});
+
 class WateringManagerPanel extends HTMLElement {
   constructor() {
     super();
@@ -284,6 +347,7 @@ class WateringManagerPanel extends HTMLElement {
     this.selectedId = null;
     this.tab = "overview";
     this.statsRange = "week";
+    this.previewData = null;
     this.loading = true;
     this.language = localStorage.getItem("watering-manager-language") || null;
   }
@@ -365,7 +429,7 @@ class WateringManagerPanel extends HTMLElement {
         <aside>
           <label>${this.t("selectSystem")}</label>
           <select id="system-select">${this.state.systems.map((item) => `<option value="${item.id}" ${item.id === this.selectedId ? "selected" : ""}>${this.esc(item.name)}</option>`).join("")}</select>
-          <nav>${["overview","schedule","automatic","hardware","diagnostics","statistics","logs"].map((tab) => `<button data-tab="${tab}" class="${this.tab === tab ? "active" : ""}"><ha-icon icon="${this.tabIcon(tab)}"></ha-icon>${this.t(tab)}</button>`).join("")}</nav>
+          <nav>${["overview","schedule","automatic","hardware","preview","diagnostics","statistics","logs"].map((tab) => `<button data-tab="${tab}" class="${this.tab === tab ? "active" : ""}"><ha-icon icon="${this.tabIcon(tab)}"></ha-icon>${this.t(tab)}</button>`).join("")}</nav>
           <div class="aside-status"><span class="dot ${this.state.active_system_ids.includes(system.id) ? "on" : ""}"></span>${this.state.active_system_ids.includes(system.id) ? this.t("running") : this.t("idle")}</div>
         </aside>
         <main>
@@ -379,16 +443,17 @@ class WateringManagerPanel extends HTMLElement {
     if (!this.isAdmin) return "";
     const running = this.state.active_system_ids.includes(system.id);
     const editable = ["schedule", "automatic", "hardware", "diagnostics"].includes(this.tab);
-    return `<div class="actions">${running ? `<button class="danger" id="stop"><ha-icon icon="mdi:stop"></ha-icon>${this.t("stop")}</button>` : `<button id="run"><ha-icon icon="mdi:play"></ha-icon>${this.t("runNow")}</button>`}${editable ? `<button class="primary" id="save"><ha-icon icon="mdi:content-save"></ha-icon>${this.t("save")}</button>` : ""}<button class="icon danger-text" id="delete"><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>`;
+    return `<div class="actions">${running ? `<button class="danger" id="stop"><ha-icon icon="mdi:stop"></ha-icon>${this.t("stop")}</button>` : system.maintenance_mode ? "" : `<button id="run"><ha-icon icon="mdi:play"></ha-icon>${this.t("runNow")}</button>`}${editable ? `<button class="primary" id="save"><ha-icon icon="mdi:content-save"></ha-icon>${this.t("save")}</button>` : ""}<button class="icon danger-text" id="delete"><ha-icon icon="mdi:delete-outline"></ha-icon></button></div>`;
   }
 
-  tabIcon(tab) { return ({overview:"mdi:view-dashboard-outline",schedule:"mdi:calendar-clock",automatic:"mdi:auto-fix",hardware:"mdi:chip",diagnostics:"mdi:heart-pulse",statistics:"mdi:chart-bar",logs:"mdi:format-list-bulleted"})[tab]; }
+  tabIcon(tab) { return ({overview:"mdi:view-dashboard-outline",schedule:"mdi:calendar-clock",automatic:"mdi:auto-fix",hardware:"mdi:chip",preview:"mdi:file-search-outline",diagnostics:"mdi:heart-pulse",statistics:"mdi:chart-bar",logs:"mdi:format-list-bulleted"})[tab]; }
 
   tabContent(system) {
     if (this.tab === "overview") return this.overview(system);
     if (this.tab === "schedule") return this.schedule(system);
     if (this.tab === "automatic") return this.automatic(system);
     if (this.tab === "hardware") return this.hardware(system);
+    if (this.tab === "preview") return this.preview(system);
     if (this.tab === "diagnostics") return this.diagnostics(system);
     if (this.tab === "statistics") return this.statistics(system);
     return this.logs(system);
@@ -400,11 +465,13 @@ class WateringManagerPanel extends HTMLElement {
     const soilTemperature1 = this.entityValueWithUnit(system.soil_temperature_sensor);
     const soilTemperature2 = this.entityValueWithUnit(system.soil_temperature_sensor_2);
     const weather = this.weatherSummary(system.weather_entity);
+    const balance = this.state.water_balances?.[system.id];
     return `<div class="grid stats">
       ${this.stat("mdi:water-percent", this.t("sensorValues"), moisture.map((v) => v == null ? "—" : `${v}%`).join(" / "))}
       ${this.stat("mdi:thermometer-lines", this.t("soilTemperature1"), soilTemperature1)}
       ${this.stat("mdi:thermometer-lines", this.t("soilTemperature2"), soilTemperature2)}
       ${this.stat(weather.icon, this.t("weather"), weather.text)}
+      ${this.stat("mdi:water-sync", this.t("currentDeficit"), balance?.deficit_mm == null ? "—" : `${balance.deficit_mm} mm`)}
       ${this.stat("mdi:clock-outline", this.t("lastRun"), system.last_run_at ? this.formatDate(system.last_run_at) : "—")}
       ${this.stat("mdi:timer-outline", this.t("lastDuration"), system.last_duration == null ? "—" : `${system.last_duration} ${this.t("minutes")}`)}
       ${this.stat(running ? "mdi:water-pump" : "mdi:check-circle-outline", this.t("currentStatus"), running ? this.t("running") : this.t("idle"))}
@@ -422,15 +489,33 @@ class WateringManagerPanel extends HTMLElement {
       ${this.selectField("mode", this.t("mode"), system.mode, [["manual",this.t("manual")],["auto",this.t("auto")]])}
       ${this.input("start_time", this.t("startTime"), system.start_time, "time")}
       ${this.number("manual_duration", this.t("manualDuration"), system.manual_duration, 1, 240, this.t("minutes"))}
+      ${this.input("paused_until", this.t("pauseUntil"), system.paused_until || "", "date")}
     </div>
     <label class="toggle"><input name="enabled" type="checkbox" ${system.enabled ? "checked" : ""}><span></span>${this.t("enabled")}</label>
     <div class="field"><label>${this.t("days")}</label><div class="days">${days.map((day, index) => `<label><input type="checkbox" name="days" value="${index}" ${system.days.includes(index) ? "checked" : ""}><span>${this.t(day)}</span></label>`).join("")}</div></div>
     <div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("modeHelp")}</div>
+    <div class="info-line"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("pauseHelp")}</div>
     ${this.textarea("notes", this.t("notes"), system.notes)}</section></form>`;
   }
 
   automatic(system) {
     return `<form id="settings-form"><div class="grid">
+      <section class="card form-card"><h3>${this.t("plantAndPot")}</h3><div class="fields two">
+        ${this.selectField("plant_profile", this.t("plantProfile"), system.plant_profile, [["low",this.t("low")],["medium",this.t("medium")],["high",this.t("high")],["custom",this.t("custom")]])}
+        ${this.number("crop_coefficient", this.t("cropCoefficient"), system.crop_coefficient, 0.1, 2, "Kc")}
+        ${this.selectField("pot_shape", this.t("potShape"), system.pot_shape, [["round",this.t("round")],["rectangular",this.t("rectangular")]])}
+        ${this.number("pot_count", this.t("potCount"), system.pot_count, 1, 1000, "")}
+        ${this.number("pot_diameter_cm", this.t("potDiameter"), system.pot_diameter_cm, 1, 1000, "cm")}
+        ${this.number("pot_length_cm", this.t("potLength"), system.pot_length_cm, 1, 1000, "cm")}
+        ${this.number("pot_width_cm", this.t("potWidth"), system.pot_width_cm, 1, 1000, "cm")}
+        ${this.number("irrigation_efficiency_percent", this.t("irrigationEfficiency"), system.irrigation_efficiency_percent, 1, 100, "%")}
+      </div><div class="info-line"><ha-icon icon="mdi:sprout-outline"></ha-icon>${this.t("profilePreset")}</div></section>
+      <section class="card form-card"><h3>${this.t("waterBalance")}</h3>
+        <div class="field">${this.fieldLabel("water_balance_enabled", this.t("waterBalanceEnabled"))}<label class="toggle"><input name="water_balance_enabled" type="checkbox" ${system.water_balance_enabled ? "checked" : ""}><span></span>${this.t("enabled")}</label></div>
+        <div class="fields two">
+          ${this.number("water_balance_capacity_mm", this.t("waterBalanceCapacity"), system.water_balance_capacity_mm, 0.1, 500, "mm")}
+          ${this.number("water_balance_trigger_mm", this.t("waterBalanceTrigger"), system.water_balance_trigger_mm, 0.1, 500, "mm")}
+        </div><div class="info-line"><ha-icon icon="mdi:water-sync"></ha-icon>${this.t("etExplanation")}</div></section>
       <section class="card form-card"><h3>${this.t("automatic")}</h3><div class="fields two">
         ${this.number("base_duration", this.t("baseDuration"), system.base_duration, 1, 240, this.t("minutes"))}
         ${this.number("conflict_duration", this.t("conflictDuration"), system.conflict_duration, 1, 60, this.t("minutes"))}
@@ -442,7 +527,7 @@ class WateringManagerPanel extends HTMLElement {
         ${this.selectField("exposure", this.t("exposure"), system.exposure, [["exposed",this.t("exposed")],["partial",this.t("partial")],["covered",this.t("covered")]])}
         ${this.number("rain_reach_percent", this.t("rainReach"), system.rain_reach_percent, 0, 100, "%")}
         ${this.number("measured_rain_threshold", this.t("rainThreshold"), system.measured_rain_threshold, 0, 100, "mm")}
-      </div><div class="info-line"><ha-icon icon="mdi:weather-partly-cloudy"></ha-icon>${this.t("weatherInfo")}</div><div class="info-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${this.t("sensorConflict")}</div></section>
+      </div><div class="info-line"><ha-icon icon="mdi:weather-partly-cloudy"></ha-icon>${this.t("weatherInfo")}</div><div class="info-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${this.t("sensorConflict")}</div><div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("optionalSensors")}</div></section>
       <section class="card form-card"><h3>${this.t("safety")}</h3><div class="fields two">
         ${this.number("minimum_duration", this.t("minDuration"), system.minimum_duration, 1, 60, this.t("minutes"))}
         ${this.number("maximum_duration", this.t("maxDuration"), system.maximum_duration, 1, 240, this.t("minutes"))}
@@ -454,7 +539,7 @@ class WateringManagerPanel extends HTMLElement {
         ${this.number("leak_flow_threshold", this.t("leakFlow"), system.leak_flow_threshold, 0, 10000, "")}
       </div></section>
       <section class="card form-card"><h3>${this.t("postCheck")}</h3>
-        <label class="toggle"><input name="post_check_enabled" type="checkbox" ${system.post_check_enabled ? "checked" : ""}><span></span>${this.t("postCheckEnabled")}</label>
+        <div class="field">${this.fieldLabel("post_check_enabled", this.t("postCheckEnabled"))}<label class="toggle"><input name="post_check_enabled" type="checkbox" ${system.post_check_enabled ? "checked" : ""}><span></span>${this.t("enabled")}</label></div>
         <div class="fields two">
           ${this.number("post_check_delay_minutes", this.t("postCheckDelay"), system.post_check_delay_minutes, 1, 1440, this.t("minutes"))}
           ${this.number("post_check_min_increase", this.t("postCheckIncrease"), system.post_check_min_increase, 0, 100, "%")}
@@ -473,6 +558,10 @@ class WateringManagerPanel extends HTMLElement {
       ${this.entityField("soil_temperature_sensor_2", this.t("soilTemperature2"), system.soil_temperature_sensor_2, ["sensor"])}
       ${this.entityField("rain_sensor", this.t("rain"), system.rain_sensor, ["sensor"])}
       ${this.entityField("flow_sensor", this.t("flow"), system.flow_sensor, ["sensor"])}
+      ${this.entityField("water_meter_sensor", this.t("cumulativeMeter"), system.water_meter_sensor, ["sensor"])}
+      ${this.entityField("et0_sensor", this.t("et0"), system.et0_sensor, ["sensor"])}
+      ${this.number("normal_flow_rate", this.t("normalFlow"), system.normal_flow_rate, 0, 10000, "L/min")}
+      ${this.number("flow_tolerance_percent", this.t("flowTolerance"), system.flow_tolerance_percent, 1, 100, "%")}
       ${this.number("flow_minimum", this.t("flowMinimum"), system.flow_minimum, 0, 10000, "")}
       ${this.number("flow_maximum", this.t("flowMaximum"), system.flow_maximum, 0, 10000, "")}
       ${this.number("flow_grace_seconds", this.t("flowGrace"), system.flow_grace_seconds, 1, 120, "sec")}
@@ -482,10 +571,44 @@ class WateringManagerPanel extends HTMLElement {
     </section></form>`;
   }
 
+  preview(system) {
+    const item = this.previewData;
+    if (!item) return `<div class="preview-view"><section class="card empty compact"><ha-icon icon="mdi:file-search-outline"></ha-icon><button class="primary" id="refresh-preview">${this.t("refreshPreview")}</button></section></div>`;
+    const inputs = item.inputs || {};
+    const balance = inputs.water_balance;
+    const moisture = (inputs.moisture || []).map((reading, index) => `<div class="decision-row"><span>${this.t(index ? "moisture2" : "moisture1")}</span><strong>${reading.valid ? `${reading.value}%` : this.reason(reading.reason)}</strong></div>`).join("");
+    const gates = (inputs.gates || []).map((gate) => `<div class="health-row ${gate.passed ? "ok" : "error"}"><ha-icon icon="${gate.passed ? "mdi:check-circle" : "mdi:close-circle"}"></ha-icon><div><strong>${this.reason(gate.key)}</strong>${gate.detail ? `<small>${this.esc(gate.detail)}</small>` : ""}</div></div>`).join("");
+    return `<div class="preview-view">
+      <section class="card decision-hero ${item.will_run ? "go" : "stop"}"><ha-icon icon="${item.will_run ? "mdi:sprinkler-variant" : "mdi:water-off-outline"}"></ha-icon><div><small>${this.t("preview")}</small><strong>${this.t(item.will_run ? "willWater" : "willNotWater")}</strong><p>${this.reason(item.reason)}</p></div><button id="refresh-preview"><ha-icon icon="mdi:refresh"></ha-icon>${this.t("refreshPreview")}</button></section>
+      <div class="grid stats">${this.stat("mdi:timer-outline", this.t("planned"), `${item.duration} ${this.t("minutes")}`)}${this.stat("mdi:water-outline", this.t("expectedVolume"), item.expected_volume_liters == null ? "—" : this.formatVolume(Number(item.expected_volume_liters)))}</div>
+      <section class="card"><h3>${this.t("decisionGates")}</h3><div class="health-list">${gates}</div></section>
+      <section class="card"><h3>${this.t("decisionInputs")}</h3><div class="decision-list">
+        ${moisture}
+        <div class="decision-row"><span>${this.t("weather")}</span><strong>${this.esc(inputs.weather?.condition || "—")} · ${inputs.weather?.temperature ?? "—"}° · ×${inputs.weather?.factor ?? "—"}</strong></div>
+        <div class="decision-row"><span>${this.t("rain")}</span><strong>${inputs.rain_mm ?? "—"} mm</strong></div>
+        <div class="decision-row"><span>${this.t("durationBasis")}</span><strong>${this.esc(inputs.duration_basis || "—")}</strong></div>
+      </div></section>
+      ${balance ? `<section class="card"><h3>${this.t("waterBalance")}</h3><div class="decision-list">
+        <div class="decision-row"><span>ET0</span><strong>${balance.et0?.value ?? "—"} ${this.esc(balance.et0?.unit || "")}</strong></div>
+        <div class="decision-row"><span>Kc / ETc</span><strong>${balance.crop_coefficient} / ${balance.last_etc_mm ?? "—"} mm</strong></div>
+        <div class="decision-row"><span>${this.t("currentDeficit")}</span><strong>${balance.deficit_mm} mm</strong></div>
+        <div class="decision-row"><span>${this.t("rainReach")}</span><strong>${balance.effective_rain_mm ?? "—"} mm</strong></div>
+        <div class="decision-row"><span>${this.t("potShape")}</span><strong>${balance.pot_area_m2} m²</strong></div>
+        <div class="decision-row"><span>${this.t("normalFlow")}</span><strong>${balance.flow_lpm ?? "—"} L/min</strong></div>
+        <div class="decision-row"><span>${this.t("dataQuality")}</span><strong>${this.esc(balance.quality)}</strong></div>
+      </div></section>` : ""}
+    </div>`;
+  }
+
+  async loadPreview() {
+    try { this.previewData = await this.call("preview_decision", {system_id:this.selectedId}); this.render(); }
+    catch (error) { this.message(error.message || String(error), true); }
+  }
+
   diagnostics(system) {
     const diagnostic = this.state.diagnostics?.[system.id] || {status:"warning",checks:[],pending_post_checks:0};
     const calibration = this.state.calibrations?.[system.id];
-    const labels = {valve:"diagnosticValve",moisture_1:"diagnosticMoisture1",moisture_2:"diagnosticMoisture2",soil_temperature_1:"diagnosticSoilTemperature1",soil_temperature_2:"diagnosticSoilTemperature2",weather:"diagnosticWeather",rain:"diagnosticRain",flow:"diagnosticFlow",notifications:"diagnosticNotifications"};
+    const labels = {valve:"diagnosticValve",moisture_1:"diagnosticMoisture1",moisture_2:"diagnosticMoisture2",soil_temperature_1:"diagnosticSoilTemperature1",soil_temperature_2:"diagnosticSoilTemperature2",weather:"diagnosticWeather",rain:"diagnosticRain",flow:"diagnosticFlow",water_meter:"diagnosticWaterMeter",et0:"diagnosticEt0",notifications:"diagnosticNotifications"};
     const statusIcon = {healthy:"mdi:check-decagram",warning:"mdi:alert-outline",critical:"mdi:alert-octagon"}[diagnostic.status] || "mdi:help-circle-outline";
     let result = `<p class="muted">${this.t("noCalibration")}</p>`;
     if (calibration?.status === "running") {
@@ -499,7 +622,12 @@ class WateringManagerPanel extends HTMLElement {
     return `<div class="diagnostics-view">
       <section class="card health-summary ${diagnostic.status}"><ha-icon icon="${statusIcon}"></ha-icon><div><small>${this.t("health")}</small><strong>${this.t(diagnostic.status)}</strong></div><span>${this.t("pendingChecks")}: ${diagnostic.pending_post_checks || 0}</span></section>
       <section class="card"><h3>${this.t("health")}</h3><div class="health-list">${diagnostic.checks.map((check) => `<div class="health-row ${check.status}"><ha-icon icon="${check.status === "ok" ? "mdi:check-circle" : check.status === "error" ? "mdi:alert-circle" : "mdi:minus-circle-outline"}"></ha-icon><div><strong>${this.t(labels[check.key] || check.key)}</strong><small>${this.diagnosticDetail(check.detail)}</small></div></div>`).join("")}</div></section>
-      <form id="settings-form"><section class="card form-card"><h3>${this.t("calibration")}</h3><div class="fields two">
+      <form id="settings-form"><section class="card form-card"><h3>${this.t("maintenanceMode")}</h3>
+        <div class="field">${this.fieldLabel("maintenance_mode", this.t("maintenanceMode"))}<label class="toggle"><input name="maintenance_mode" type="checkbox" ${system.maintenance_mode ? "checked" : ""}><span></span>${this.t("enabled")}</label></div>
+        <div class="fields two">${this.number("valve_test_seconds", this.t("valveTestSeconds"), system.valve_test_seconds, 2, 60, "sec")}</div>
+        <div class="info-line"><ha-icon icon="mdi:tools"></ha-icon>${this.t("maintenanceHelp")}</div>
+        ${this.isAdmin ? `<button type="button" id="test-valve"><ha-icon icon="mdi:pipe-valve"></ha-icon>${this.t("valveTest")}</button>` : ""}
+      </section><section class="card form-card"><h3>${this.t("calibration")}</h3><div class="fields two">
         ${this.number("flow_calibration_seconds", this.t("flowCalibrationSeconds"), system.flow_calibration_seconds, 10, 120, "sec")}
         ${this.number("duration_calibration_minutes", this.t("durationCalibrationMinutes"), system.duration_calibration_minutes, 0.5, 10, this.t("minutes"))}
         ${this.number("duration_calibration_wait_minutes", this.t("durationCalibrationWait"), system.duration_calibration_wait_minutes, 1, 120, this.t("minutes"))}
@@ -511,58 +639,59 @@ class WateringManagerPanel extends HTMLElement {
     if (detail == null || detail === "") return this.t("notConfigured");
     if (typeof detail === "object") {
       if (detail.valid) return `${detail.value}${detail.age_minutes != null ? ` · ${detail.age_minutes} min` : ""}`;
+      if ("valid" in detail) return this.reason(detail.reason);
+      if (detail.value != null) return `${detail.value}${detail.unit ? ` ${detail.unit}` : ""}`;
       return this.reason(detail.reason);
     }
     return this.esc(detail);
   }
 
   statistics(system) {
-    const { start, end } = this.statisticsWindow();
-    const logs = this.state.logs.filter((log) => {
-      if (log.system_id !== system.id) return false;
-      const timestamp = new Date(log.timestamp);
-      return timestamp >= start && timestamp < end;
-    });
-    const wateringLogs = logs.filter((log) => Number(log.actual_duration) > 0);
-    const totalMinutes = wateringLogs.reduce((sum, log) => sum + Number(log.actual_duration || 0), 0);
-    const volumeLogs = wateringLogs.filter((log) => log.water_volume_liters != null && Number.isFinite(Number(log.water_volume_liters)));
-    const totalLiters = volumeLogs.reduce((sum, log) => sum + Number(log.water_volume_liters), 0);
-    const temperatures = wateringLogs.map((log) => log.inputs?.weather?.temperature).filter((value) => value != null && Number.isFinite(Number(value))).map(Number);
-    const soilTemperatures1 = wateringLogs.map((log) => log.inputs?.soil_temperatures?.[0] ?? log.inputs?.soil_temperature).filter((value) => value != null && Number.isFinite(Number(value))).map(Number);
-    const soilTemperatures2 = wateringLogs.map((log) => log.inputs?.soil_temperatures?.[1]).filter((value) => value != null && Number.isFinite(Number(value))).map(Number);
-    const moisture = wateringLogs.flatMap((log) => (log.inputs?.moisture || []).filter((reading) => reading.valid).map((reading) => Number(reading.value))).filter(Number.isFinite);
-    const averageTemperature = this.average(temperatures);
-    const averageSoilTemperature1 = this.average(soilTemperatures1);
-    const averageSoilTemperature2 = this.average(soilTemperatures2);
-    const averageMoisture = this.average(moisture);
+    const now = new Date();
+    let start = null;
+    if (this.statsRange === "day") start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (this.statsRange === "week") start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+    if (this.statsRange === "month") start = new Date(now.getFullYear(), now.getMonth(), 1);
+    if (this.statsRange === "year") start = new Date(now.getFullYear(), 0, 1);
+    const rows = Object.values(this.state.aggregates?.[system.id] || {}).filter((row) => !start || new Date(`${row.date}T00:00:00`) >= start).sort((a,b) => a.date.localeCompare(b.date));
+    const sum = (key) => rows.reduce((total, row) => total + Number(row[key] || 0), 0);
+    const weighted = (sumKey, countKey) => { const count=sum(countKey); return count ? sum(sumKey)/count : null; };
+    const totalMinutes = sum("duration_minutes");
+    const totalLiters = sum("water_liters");
+    const averageTemperature = weighted("air_temperature_sum","air_temperature_count");
+    const averageSoilTemperature1 = weighted("soil_temperature_1_sum","soil_temperature_1_count");
+    const averageSoilTemperature2 = weighted("soil_temperature_2_sum","soil_temperature_2_count");
+    const averageMoisture = weighted("moisture_sum","moisture_count");
     const soilTemperatureUnit1 = this.hass.states[system.soil_temperature_sensor]?.attributes?.unit_of_measurement || "°";
     const soilTemperatureUnit2 = this.hass.states[system.soil_temperature_sensor_2]?.attributes?.unit_of_measurement || "°";
-    const completed = logs.filter((log) => log.status === "completed").length;
-    const skipped = logs.filter((log) => log.status === "skipped").length;
-    const failed = logs.filter((log) => log.status === "failed").length;
-    const buckets = this.statisticsBuckets(wateringLogs, start);
+    const completed = sum("completed"), skipped = sum("skipped"), failed = sum("failed");
+    const grouped = new Map();
+    rows.forEach((row) => { const key=["year","all"].includes(this.statsRange) ? row.date.slice(0,7) : row.date; grouped.set(key,(grouped.get(key)||0)+Number(row.duration_minutes||0)); });
+    const buckets = [...grouped].map(([label,minutes]) => ({label,minutes}));
     const maxMinutes = Math.max(0, ...buckets.map((bucket) => bucket.minutes));
     return `<div class="statistics-view">
-      <div class="range-tabs">${["day","week","month"].map((range) => `<button type="button" data-stats-range="${range}" class="${this.statsRange === range ? "active" : ""}">${this.t(range)}</button>`).join("")}</div>
+      <div class="range-tabs">${["day","week","month","year","all"].map((range) => `<button type="button" data-stats-range="${range}" class="${this.statsRange === range ? "active" : ""}">${this.t(range)}</button>`).join("")}</div>
       <div class="grid stats">
         ${this.stat("mdi:timer-outline", this.t("totalWateringTime"), this.formatMinutes(totalMinutes))}
-        ${this.stat("mdi:water-outline", this.t("totalWaterVolume"), volumeLogs.length ? this.formatVolume(totalLiters) : "—")}
+        ${this.stat("mdi:water-outline", this.t("totalWaterVolume"), sum("volume_known_runs") ? this.formatVolume(totalLiters) : "—")}
         ${this.stat("mdi:thermometer", this.t("averageTemperature"), averageTemperature == null ? "—" : `${averageTemperature.toFixed(1)}°`)}
         ${this.stat("mdi:thermometer-lines", this.t("averageSoilTemperature1"), averageSoilTemperature1 == null ? "—" : `${averageSoilTemperature1.toFixed(1)} ${soilTemperatureUnit1}`)}
         ${this.stat("mdi:thermometer-lines", this.t("averageSoilTemperature2"), averageSoilTemperature2 == null ? "—" : `${averageSoilTemperature2.toFixed(1)} ${soilTemperatureUnit2}`)}
         ${this.stat("mdi:water-percent", this.t("averageMoisture"), averageMoisture == null ? "—" : `${averageMoisture.toFixed(1)}%`)}
-        ${this.stat("mdi:sprinkler-variant", this.t("wateringRuns"), String(wateringLogs.length))}
+        ${this.stat("mdi:sprinkler-variant", this.t("wateringRuns"), String(sum("runs")))}
         ${this.stat("mdi:check-circle-outline", this.t("successfulRuns"), String(completed))}
         ${this.stat("mdi:skip-next-outline", this.t("skippedRuns"), String(skipped))}
         ${this.stat("mdi:alert-circle-outline", this.t("failedRuns"), String(failed))}
+        ${this.stat("mdi:counter", this.t("exactVolume"), String(sum("exact_volume_runs")))}
+        ${this.stat("mdi:approximately-equal", this.t("estimatedVolume"), String(sum("estimated_volume_runs")))}
       </div>
       <section class="card chart-card"><h3>${this.t("durationChart")}</h3>
-        ${wateringLogs.length ? `<div class="chart-scroll"><div class="bar-chart">${buckets.map((bucket) => {
+        ${rows.length ? `<div class="chart-scroll"><div class="bar-chart">${buckets.map((bucket) => {
           const height = maxMinutes ? Math.max(3, Math.round(bucket.minutes / maxMinutes * 100)) : 0;
           return `<div class="bar-column" title="${this.esc(bucket.label)}: ${this.esc(this.formatMinutes(bucket.minutes))}"><span>${bucket.minutes ? this.formatCompactMinutes(bucket.minutes) : ""}</span><div class="bar-track"><i style="height:${height}%"></i></div><small>${this.esc(bucket.label)}</small></div>`;
         }).join("")}</div></div>` : `<p class="muted">${this.t("noStatistics")}</p>`}
       </section>
-      ${volumeLogs.length && volumeLogs.length < wateringLogs.length ? `<div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("volumePartial")}</div>` : ""}
+      ${sum("volume_known_runs") < completed ? `<div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("volumePartial")}</div>` : ""}
       <div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("statisticsNote")}</div>
     </div>`;
   }
@@ -624,7 +753,7 @@ class WateringManagerPanel extends HTMLElement {
   logs(system) {
     const rows = this.state.logs.filter((log) => log.system_id === system.id).slice().reverse().slice(0, 10);
     if (!rows.length) return `<section class="empty compact"><ha-icon icon="mdi:format-list-bulleted"></ha-icon><h3>${this.t("noLogs")}</h3></section>`;
-    return `<section class="card log-card"><div class="table-wrap"><table><thead><tr><th>${this.t("date")}</th><th>${this.t("status")}</th><th>${this.t("reason")}</th><th>${this.t("trigger")}</th><th>${this.t("planned")}</th><th>${this.t("actual")}</th></tr></thead><tbody>${rows.map((log) => `<tr><td>${this.formatDate(log.timestamp)}</td><td><span class="pill ${log.status}">${this.esc(log.status)}</span></td><td>${this.reason(log.reason)}</td><td>${this.esc(log.trigger)}</td><td>${log.planned_duration} ${this.t("minutes")}</td><td>${log.actual_duration == null ? "—" : `${log.actual_duration} ${this.t("minutes")}`}</td></tr>`).join("")}</tbody></table></div></section>`;
+    return `<section class="card log-card"><div class="table-wrap"><table><thead><tr><th>${this.t("date")}</th><th>${this.t("status")}</th><th>${this.t("reason")}</th><th>${this.t("trigger")}</th><th>${this.t("planned")}</th><th>${this.t("actual")}</th><th>${this.t("totalWaterVolume")}</th><th>${this.t("source")}</th></tr></thead><tbody>${rows.map((log) => `<tr><td>${this.formatDate(log.timestamp)}</td><td><span class="pill ${log.status}">${this.esc(log.status)}</span></td><td>${this.reason(log.reason)}</td><td>${this.esc(log.trigger)}</td><td>${log.planned_duration} ${this.t("minutes")}</td><td>${log.actual_duration == null ? "—" : `${log.actual_duration} ${this.t("minutes")}`}</td><td>${log.water_volume_liters == null ? "—" : this.formatVolume(Number(log.water_volume_liters))}</td><td>${log.water_volume_source === "cumulative_meter" ? this.t("cumulative") : log.water_volume_source === "flow_estimate" ? this.t("estimated") : "—"}</td></tr>`).join("")}</tbody></table></div></section>`;
   }
 
   fieldLabel(name, label) { return `<div class="field-label"><label for="${name}">${label}</label>${WM_HELP[name] ? `<button type="button" class="help-button" data-help="${name}" aria-label="${this.t("help")}: ${this.esc(label)}">!</button>` : ""}</div>`; }
@@ -680,7 +809,7 @@ class WateringManagerPanel extends HTMLElement {
   formatDate(value) { try { return new Intl.DateTimeFormat(this.language === "el" ? "el-GR" : "en-GB", {dateStyle:"medium",timeStyle:"short"}).format(new Date(value)); } catch { return value; } }
   reason(value) {
     if (!value) return "—";
-    const map = {manual_duration:{el:"Χειροκίνητη διάρκεια",en:"Manual duration"},soil_dry:{el:"Στεγνό χώμα",en:"Dry soil"},soil_partly_dry:{el:"Μερικώς στεγνό χώμα",en:"Partly dry soil"},soil_wet:{el:"Το χώμα είναι υγρό",en:"Soil is wet"},sensor_conflict_short_run:{el:"Διαφωνία αισθητήρων – σύντομο πότισμα",en:"Sensor conflict – short watering"},sensors_unavailable:{el:"Οι αισθητήρες δεν είναι διαθέσιμοι",en:"Sensors unavailable"},sensors_unavailable_base_duration:{el:"Αισθητήρες εκτός – βασική διάρκεια",en:"Sensors unavailable – base duration"},measured_rain:{el:"Έχει μετρηθεί αρκετή βροχή",en:"Enough measured rain"},minimum_interval:{el:"Δεν πέρασε το ελάχιστο διάστημα",en:"Minimum interval not reached"},system_disabled:{el:"Το σύστημα είναι ανενεργό",en:"System disabled"},stopped_by_user:{el:"Διακοπή από τον χρήστη",en:"Stopped by user"},flow_sensor_unavailable:{el:"Ο αισθητήρας ροής δεν είναι διαθέσιμος",en:"Flow sensor unavailable"},flow_too_low:{el:"Πολύ χαμηλή ή μηδενική ροή",en:"Flow too low or absent"},flow_too_high:{el:"Υπερβολική ροή – πιθανή διαρροή",en:"Excessive flow – possible leak"},valve_failed_to_close:{el:"Η βάνα δεν επιβεβαιώθηκε κλειστή",en:"Valve closure could not be confirmed"},flow_after_close:{el:"Ροή νερού μετά το κλείσιμο",en:"Water flow detected after closing"},interrupted_by_restart:{el:"Διακοπή λόγω επανεκκίνησης – η βάνα έκλεισε με fail-safe",en:"Interrupted by restart – valve closed by fail-safe"},moisture_verified:{el:"Επιβεβαιώθηκε αύξηση υγρασίας",en:"Moisture increase verified"},moisture_not_increased:{el:"Η υγρασία δεν αυξήθηκε αρκετά",en:"Moisture did not increase enough"},moisture_response_not_detected:{el:"Δεν ανιχνεύτηκε απόκριση υγρασίας",en:"No moisture response detected"},emergency_runtime_exceeded:{el:"Υπέρβαση ορίου έκτακτης διάρκειας",en:"Emergency runtime limit exceeded"},not_configured:{el:"Δεν έχει οριστεί",en:"Not configured"},unavailable:{el:"Μη διαθέσιμο",en:"Unavailable"},stale:{el:"Παρωχημένη μέτρηση",en:"Stale reading"},not_numeric:{el:"Μη αριθμητική τιμή",en:"Non-numeric value"}};
+    const map = {manual_duration:{el:"Χειροκίνητη διάρκεια",en:"Manual duration"},soil_dry:{el:"Στεγνό χώμα",en:"Dry soil"},soil_partly_dry:{el:"Μερικώς στεγνό χώμα",en:"Partly dry soil"},soil_wet:{el:"Το χώμα είναι υγρό",en:"Soil is wet"},sensor_conflict_short_run:{el:"Διαφωνία αισθητήρων – σύντομο πότισμα",en:"Sensor conflict – short watering"},sensors_unavailable:{el:"Οι αισθητήρες δεν είναι διαθέσιμοι",en:"Sensors unavailable"},sensors_unavailable_base_duration:{el:"Αισθητήρες εκτός – βασική διάρκεια",en:"Sensors unavailable – base duration"},measured_rain:{el:"Έχει μετρηθεί αρκετή βροχή",en:"Enough measured rain"},minimum_interval:{el:"Δεν πέρασε το ελάχιστο διάστημα",en:"Minimum interval not reached"},system_disabled:{el:"Το σύστημα είναι ανενεργό",en:"System disabled"},maintenance_mode:{el:"Λειτουργία συντήρησης ενεργή",en:"Maintenance mode is active"},paused:{el:"Παύση έως την επιλεγμένη ημερομηνία",en:"Paused until selected date"},et_water_balance:{el:"Απόφαση από ισοζύγιο ET",en:"ET water-balance decision"},et0_unavailable:{el:"Η ET0 δεν είναι διαθέσιμη ή έχει λάθος μονάδα",en:"ET0 is unavailable or has an invalid unit"},water_balance_below_trigger:{el:"Το έλλειμμα είναι κάτω από το όριο",en:"Water deficit is below the trigger"},no_moisture_sensors:{el:"Χωρίς αισθητήρες υγρασίας",en:"No moisture sensors configured"},valve_entity_required:{el:"Δεν έχει οριστεί βάνα",en:"Valve entity is required"},valve_test_passed:{el:"Η δοκιμή βάνας ολοκληρώθηκε",en:"Valve test passed"},stopped_by_user:{el:"Διακοπή από τον χρήστη",en:"Stopped by user"},flow_sensor_unavailable:{el:"Ο αισθητήρας ροής δεν είναι διαθέσιμος",en:"Flow sensor unavailable"},flow_too_low:{el:"Πολύ χαμηλή ή μηδενική ροή",en:"Flow too low or absent"},flow_too_high:{el:"Υπερβολική ροή – πιθανή διαρροή",en:"Excessive flow – possible leak"},valve_failed_to_close:{el:"Η βάνα δεν επιβεβαιώθηκε κλειστή",en:"Valve closure could not be confirmed"},flow_after_close:{el:"Ροή νερού μετά το κλείσιμο",en:"Water flow detected after closing"},interrupted_by_restart:{el:"Διακοπή λόγω επανεκκίνησης – η βάνα έκλεισε με fail-safe",en:"Interrupted by restart – valve closed by fail-safe"},moisture_verified:{el:"Επιβεβαιώθηκε αύξηση υγρασίας",en:"Moisture increase verified"},moisture_not_increased:{el:"Η υγρασία δεν αυξήθηκε αρκετά",en:"Moisture did not increase enough"},moisture_response_not_detected:{el:"Δεν ανιχνεύτηκε απόκριση υγρασίας",en:"No moisture response detected"},emergency_runtime_exceeded:{el:"Υπέρβαση ορίου έκτακτης διάρκειας",en:"Emergency runtime limit exceeded"},not_configured:{el:"Δεν έχει οριστεί",en:"Not configured"},unavailable:{el:"Μη διαθέσιμο",en:"Unavailable"},stale:{el:"Παρωχημένη μέτρηση",en:"Stale reading"},not_numeric:{el:"Μη αριθμητική τιμή",en:"Non-numeric value"}};
     return map[value]?.[this.language] || value.replaceAll("_", " ");
   }
 
@@ -688,8 +817,8 @@ class WateringManagerPanel extends HTMLElement {
     this.shadowRoot.getElementById("language")?.addEventListener("change", (event) => { this.language = event.target.value; localStorage.setItem("watering-manager-language", this.language); this.render(); });
     this.shadowRoot.getElementById("refresh")?.addEventListener("click", () => this.loadState());
     ["new-system","create-first"].forEach((id) => this.shadowRoot.getElementById(id)?.addEventListener("click", () => this.showCreateDialog()));
-    this.shadowRoot.getElementById("system-select")?.addEventListener("change", (event) => { this.selectedId = event.target.value; this.tab = "overview"; this.render(); });
-    this.shadowRoot.querySelectorAll("[data-tab]").forEach((button) => button.addEventListener("click", () => { this.tab = button.dataset.tab; this.render(); }));
+    this.shadowRoot.getElementById("system-select")?.addEventListener("change", (event) => { this.selectedId = event.target.value; this.previewData = null; this.tab = "overview"; this.render(); });
+    this.shadowRoot.querySelectorAll("[data-tab]").forEach((button) => button.addEventListener("click", () => { this.tab = button.dataset.tab; this.render(); if (this.tab === "preview") this.loadPreview(); }));
     this.shadowRoot.getElementById("save")?.addEventListener("click", () => this.save());
     this.shadowRoot.getElementById("delete")?.addEventListener("click", () => this.remove());
     this.shadowRoot.getElementById("run")?.addEventListener("click", () => this.run());
@@ -700,6 +829,9 @@ class WateringManagerPanel extends HTMLElement {
     this.shadowRoot.getElementById("calibrate-flow")?.addEventListener("click", () => this.startCalibration("flow"));
     this.shadowRoot.getElementById("calibrate-duration")?.addEventListener("click", () => this.startCalibration("duration"));
     this.shadowRoot.getElementById("apply-calibration")?.addEventListener("click", () => this.applyCalibration());
+    this.shadowRoot.getElementById("refresh-preview")?.addEventListener("click", () => this.loadPreview());
+    this.shadowRoot.getElementById("test-valve")?.addEventListener("click", () => this.testValve());
+    this.shadowRoot.getElementById("plant_profile")?.addEventListener("change", (event) => { const kc={low:0.5,medium:0.8,high:1.1}[event.target.value]; if (kc) this.shadowRoot.getElementById("crop_coefficient").value=kc; });
     this.shadowRoot.querySelectorAll("[data-stats-range]").forEach((button) => button.addEventListener("click", () => { this.statsRange = button.dataset.statsRange; this.render(); }));
     this.shadowRoot.querySelectorAll(".help-button").forEach((button) => button.addEventListener("click", () => this.showHelpDialog(button.dataset.help)));
   }
@@ -726,7 +858,11 @@ class WateringManagerPanel extends HTMLElement {
       data.enabled = form.elements.enabled.checked;
       data.days = [...form.querySelectorAll('input[name="days"]:checked')].map((input) => Number(input.value));
     }
-    if (this.tab === "automatic") data.post_check_enabled = form.elements.post_check_enabled.checked;
+    if (this.tab === "automatic") {
+      data.post_check_enabled = form.elements.post_check_enabled.checked;
+      data.water_balance_enabled = form.elements.water_balance_enabled.checked;
+    }
+    if (this.tab === "diagnostics") data.maintenance_mode = form.elements.maintenance_mode.checked;
     if (this.tab === "hardware") {
       data.notification_targets = [...form.querySelectorAll(".recipient-row")].map((row) => ({
         name: row.querySelector("[data-recipient-name]").value.trim(),
@@ -736,7 +872,7 @@ class WateringManagerPanel extends HTMLElement {
         success: row.querySelector('[data-recipient-event="success"]').checked,
       }));
     }
-    const numeric = ["manual_duration","base_duration","minimum_duration","maximum_duration","conflict_duration","dry_threshold","wet_threshold","sensor_max_age_minutes","rain_reach_percent","measured_rain_threshold","weather_sensitivity","minimum_interval_hours","soak_cycles","soak_pause_minutes","flow_minimum","flow_maximum","flow_grace_seconds","emergency_max_runtime","valve_confirmation_seconds","leak_flow_threshold","post_check_delay_minutes","post_check_min_increase","flow_calibration_seconds","duration_calibration_minutes","duration_calibration_wait_minutes"];
+    const numeric = ["manual_duration","base_duration","minimum_duration","maximum_duration","conflict_duration","dry_threshold","wet_threshold","sensor_max_age_minutes","rain_reach_percent","measured_rain_threshold","weather_sensitivity","minimum_interval_hours","soak_cycles","soak_pause_minutes","flow_minimum","flow_maximum","flow_grace_seconds","emergency_max_runtime","valve_confirmation_seconds","leak_flow_threshold","post_check_delay_minutes","post_check_min_increase","flow_calibration_seconds","duration_calibration_minutes","duration_calibration_wait_minutes","crop_coefficient","pot_count","pot_diameter_cm","pot_length_cm","pot_width_cm","irrigation_efficiency_percent","water_balance_capacity_mm","water_balance_trigger_mm","normal_flow_rate","flow_tolerance_percent","valve_test_seconds"];
     numeric.forEach((key) => { if (key in data) data[key] = Number(data[key]); });
     return data;
   }
@@ -782,6 +918,14 @@ class WateringManagerPanel extends HTMLElement {
     try {
       if (!(await this.save(false))) return;
       await this.call("start_calibration", {system_id:this.selectedId, kind});
+      await this.loadState();
+    } catch (error) { this.message(error.message || String(error), true); }
+  }
+  async testValve() {
+    if (!confirm(this.t("valveTestConfirm"))) return;
+    try {
+      if (!(await this.save(false))) return;
+      await this.call("test_valve", {system_id:this.selectedId});
       await this.loadState();
     } catch (error) { this.message(error.message || String(error), true); }
   }
@@ -831,8 +975,9 @@ class WateringManagerPanel extends HTMLElement {
       :host{--wm-green:#39745b;--wm-green-soft:color-mix(in srgb,var(--wm-green) 12%,transparent);display:block;background:var(--primary-background-color);min-height:100vh;color:var(--primary-text-color);font-family:var(--paper-font-body1_-_font-family,system-ui)}*{box-sizing:border-box}.app{min-height:100vh}header{height:76px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;background:var(--card-background-color);border-bottom:1px solid var(--divider-color);position:sticky;top:0;z-index:5}.brand,.header-actions,.actions,.title-row{display:flex;align-items:center}.brand{gap:12px}.brand>ha-icon{color:var(--wm-green);--mdc-icon-size:32px}.brand h1{font-size:20px;margin:0;display:flex;align-items:center;gap:8px}.version-badge{font-size:10px;line-height:1;padding:4px 6px;border-radius:10px;background:var(--wm-green-soft);color:var(--wm-green);font-weight:700}.brand small,.muted,.title-row p{color:var(--secondary-text-color)}.header-actions,.actions{gap:8px}button,select,input,textarea{font:inherit;color:inherit}button{border:1px solid var(--divider-color);background:var(--card-background-color);border-radius:10px;padding:10px 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px}button.primary{background:var(--wm-green);color:white;border-color:var(--wm-green)}button.danger{background:var(--error-color);color:white;border-color:var(--error-color)}button.icon{padding:10px}.danger-text{color:var(--error-color)}select,input,textarea{width:100%;background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:9px;padding:11px 12px;outline:none}select:focus,input:focus,textarea:focus{border-color:var(--wm-green);box-shadow:0 0 0 2px var(--wm-green-soft)}.workspace{display:grid;grid-template-columns:240px minmax(0,1fr);max-width:1500px;margin:auto;min-height:calc(100vh - 76px)}aside{padding:24px 18px;border-right:1px solid var(--divider-color);background:var(--card-background-color)}aside>label,.field>label,.field-label label{display:block;font-size:12px;font-weight:650;color:var(--secondary-text-color)}aside>label,.field>label{margin:0 0 7px}.field-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 7px}.help-button{width:30px;height:30px;min-width:30px;padding:0;border-radius:50%;border-color:color-mix(in srgb,var(--wm-green) 42%,var(--divider-color));color:var(--wm-green);font-size:14px;font-weight:800;background:var(--wm-green-soft)}.help-button:hover,.help-button:focus{background:var(--wm-green);color:#fff;outline:none}.help-dialog-title{display:flex;align-items:center;gap:12px}.help-dialog-title h2{margin:0}.help-mark{display:grid;place-items:center;width:34px;height:34px;min-width:34px;border-radius:50%;background:var(--wm-green);color:#fff;font-weight:800}.help-dialog section{padding:24px}.help-dialog p{line-height:1.6;white-space:pre-line;margin:18px 0 24px}.help-dialog .help-close{width:100%;min-height:44px}aside nav{display:grid;gap:5px;margin-top:24px}aside nav button{justify-content:flex-start;border:0;background:transparent;padding:11px}aside nav button.active{background:var(--wm-green-soft);color:var(--wm-green)}.aside-status{margin-top:24px;padding:12px;border-top:1px solid var(--divider-color);display:flex;align-items:center;gap:8px;font-size:13px}.dot{width:9px;height:9px;background:#9ca3af;border-radius:50%}.dot.on{background:#22c55e;box-shadow:0 0 0 5px rgba(34,197,94,.12)}main{padding:28px;min-width:0}.title-row{justify-content:space-between;margin-bottom:24px;gap:16px}.title-row h2{font-size:26px;margin:0 0 4px}.title-row p{margin:0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{background:var(--card-background-color);border:1px solid var(--divider-color);border-radius:14px;padding:20px;box-shadow:var(--ha-card-box-shadow,none)}.wide{grid-column:1/-1}.stat{display:flex;align-items:center;gap:16px}.stat>ha-icon{color:var(--wm-green);background:var(--wm-green-soft);padding:12px;border-radius:12px;box-sizing:content-box}.stat small,.stat strong{display:block}.stat strong{font-size:20px;margin-top:5px}.card h3{margin:0 0 18px}.reason{font-size:18px;margin:0}.info{display:flex;gap:12px;align-items:flex-start}.info ha-icon,.info-line ha-icon{color:var(--wm-green);flex:none}.info p{margin:0}.form-card{max-width:1000px}.fields{display:grid;gap:17px}.fields.two{grid-template-columns:repeat(2,minmax(0,1fr))}.field{margin-bottom:17px}.suffix{display:flex}.suffix input{border-radius:9px 0 0 9px}.suffix span{border:1px solid var(--divider-color);border-left:0;border-radius:0 9px 9px 0;padding:11px;background:var(--secondary-background-color);white-space:nowrap;color:var(--secondary-text-color)}.toggle{display:flex;align-items:center;gap:10px;margin:5px 0 22px}.toggle input{display:none}.toggle span{width:42px;height:24px;background:#9ca3af;border-radius:20px;position:relative}.toggle span:after{content:"";position:absolute;width:18px;height:18px;top:3px;left:3px;background:white;border-radius:50%;transition:.2s}.toggle input:checked+span{background:var(--wm-green)}.toggle input:checked+span:after{left:21px}.days{display:flex;gap:8px;flex-wrap:wrap}.days input{display:none}.days span{display:flex;width:44px;height:44px;align-items:center;justify-content:center;border:1px solid var(--divider-color);border-radius:50%;cursor:pointer}.days input:checked+span{background:var(--wm-green);border-color:var(--wm-green);color:white}.info-line{display:flex;align-items:flex-start;gap:9px;padding:12px;margin:12px 0;background:var(--wm-green-soft);border-radius:10px;font-size:13px}.empty{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;color:var(--secondary-text-color)}.empty>ha-icon{--mdc-icon-size:60px;color:var(--wm-green)}.empty.compact{min-height:300px}.loading{min-height:60vh;display:grid;place-items:center}.log-card{padding:0;overflow:hidden}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th,td{text-align:left;padding:14px;border-bottom:1px solid var(--divider-color);font-size:13px}th{color:var(--secondary-text-color);background:var(--secondary-background-color)}.pill{padding:4px 8px;border-radius:20px;background:var(--secondary-background-color)}.pill.completed{color:#15803d;background:#dcfce7}.pill.failed{color:#b91c1c;background:#fee2e2}.toast{position:fixed;right:24px;bottom:24px;background:#1f2937;color:white;border-radius:10px;padding:13px 18px;opacity:0;transform:translateY(20px);pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1;transform:none}.toast.error{background:var(--error-color)}
       .statistics-view{display:grid;gap:16px}.range-tabs{display:flex;gap:6px;padding:4px;background:var(--secondary-background-color);border-radius:12px;width:max-content;max-width:100%}.range-tabs button{border:0;background:transparent;min-width:92px}.range-tabs button.active{background:var(--wm-green);color:#fff}.chart-card{overflow:hidden}.chart-scroll{overflow-x:auto;padding:4px 0 8px}.bar-chart{height:220px;display:flex;align-items:stretch;gap:8px;min-width:max-content}.bar-column{width:38px;display:grid;grid-template-rows:22px 1fr 22px;align-items:end;text-align:center}.bar-column>span{font-size:10px;color:var(--secondary-text-color);align-self:center}.bar-track{height:150px;width:22px;margin:auto;background:var(--secondary-background-color);border-radius:7px;overflow:hidden;display:flex;align-items:flex-end}.bar-track i{display:block;width:100%;background:var(--wm-green);border-radius:7px 7px 0 0;min-height:0}.bar-column small{font-size:11px;color:var(--secondary-text-color);overflow:hidden;text-overflow:ellipsis}.statistics-view>.info-line{margin:0}.statistics-view .stats{grid-template-columns:repeat(4,minmax(0,1fr))}
       .diagnostics-view{display:grid;gap:16px;max-width:1000px}.health-summary{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px}.health-summary>ha-icon{--mdc-icon-size:34px}.health-summary small,.health-summary strong,.health-row small,.health-row strong,.calibration-result small{display:block}.health-summary strong{font-size:20px}.health-summary.healthy>ha-icon,.health-row.ok>ha-icon{color:#22a05a}.health-summary.warning>ha-icon,.health-row.warning>ha-icon{color:#d08a00}.health-summary.critical>ha-icon,.health-row.error>ha-icon{color:var(--error-color)}.health-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.health-row{display:flex;align-items:center;gap:10px;padding:12px;background:var(--secondary-background-color);border-radius:10px}.health-row small,.calibration-result small,.calibration-progress small{margin-top:3px;color:var(--secondary-text-color)}.calibration-actions{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}.calibration-result,.calibration-progress{display:flex;align-items:center;gap:14px;padding:14px;border-radius:10px;background:var(--wm-green-soft)}.calibration-result{justify-content:space-between;flex-wrap:wrap}.notification-card{margin-top:16px}.section-title,.recipient-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.section-title h3{margin-bottom:4px}.section-title p{margin:0 0 18px}.recipient-list{display:grid;gap:14px}.recipient-row{border:1px solid var(--divider-color);border-radius:12px;padding:16px;background:var(--secondary-background-color)}.recipient-head{align-items:center;margin-bottom:14px}.recipient-events{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 14px}.recipient-events input{display:none}.recipient-events span{min-height:54px;display:flex;align-items:center;justify-content:center;gap:7px;text-align:center;padding:9px;border:1px solid var(--divider-color);border-radius:9px;background:var(--card-background-color);cursor:pointer;font-size:12px}.recipient-events input:checked+span{background:var(--wm-green-soft);border-color:var(--wm-green);color:var(--wm-green);font-weight:650}.empty-notifications{display:flex;align-items:center;gap:10px;padding:18px;border:1px dashed var(--divider-color);border-radius:10px;color:var(--secondary-text-color)}.pill.warning{color:#a16207;background:#fef3c7}
+      .preview-view{display:grid;gap:16px;max-width:1100px}.decision-hero{display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center}.decision-hero>ha-icon{--mdc-icon-size:42px}.decision-hero.go>ha-icon{color:#22a05a}.decision-hero.stop>ha-icon{color:var(--error-color)}.decision-hero strong,.decision-hero small{display:block}.decision-hero strong{font-size:22px;margin:4px 0}.decision-hero p{margin:0;color:var(--secondary-text-color)}.decision-list{display:grid}.decision-row{display:flex;justify-content:space-between;gap:18px;padding:12px 0;border-bottom:1px solid var(--divider-color)}.decision-row:last-child{border:0}.decision-row span{color:var(--secondary-text-color)}.decision-row strong{text-align:right}
       dialog{border:0;border-radius:16px;background:var(--card-background-color);color:var(--primary-text-color);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.35);max-width:460px;width:calc(100% - 32px)}dialog::backdrop{background:rgba(0,0,0,.5)}dialog form{padding:24px}dialog h2{margin:0 0 8px}dialog p{color:var(--secondary-text-color);margin-bottom:20px}dialog label{display:grid;gap:7px;font-size:13px;font-weight:650}dialog form>div{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}
-      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.version-badge{font-size:9px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two,.health-list{grid-template-columns:1fr}.stats,.statistics-view .stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.help-button{width:36px;height:36px;min-width:36px}.help-dialog{max-height:calc(100vh - 24px);overflow:auto}.help-dialog section{padding:20px}.range-tabs{width:100%}.range-tabs button{min-width:0;flex:1;padding:10px 8px}.health-summary{grid-template-columns:auto 1fr}.health-summary>span{grid-column:1/-1}.calibration-actions button{width:100%}.section-title{display:grid}.section-title>button{width:100%}.recipient-events{grid-template-columns:1fr}.recipient-events span{justify-content:flex-start}.test-recipient{width:100%}.toast{left:14px;right:14px;bottom:14px}}
+      @media(max-width:800px){header{height:auto;min-height:68px;padding:12px 14px}.brand small{display:none}.brand h1{font-size:17px}.version-badge{font-size:9px}.header-actions .primary{font-size:0}.header-actions .primary ha-icon{font-size:initial}.workspace{display:block}.workspace aside{border-right:0;border-bottom:1px solid var(--divider-color);padding:12px 14px;position:sticky;top:68px;z-index:4}aside>label,.aside-status{display:none}aside nav{display:flex;margin-top:10px;overflow:auto}aside nav button{min-width:max-content;font-size:12px;flex-direction:column;gap:3px;padding:8px 10px}main{padding:18px 14px}.title-row{align-items:flex-start}.title-row h2{font-size:21px}.actions{flex-wrap:wrap;justify-content:flex-end}.actions button{font-size:0;padding:9px}.actions button ha-icon{font-size:initial}.grid,.fields.two,.health-list{grid-template-columns:1fr}.stats,.statistics-view .stats{grid-template-columns:1fr 1fr}.stat{padding:14px}.stat strong{font-size:16px}.wide{grid-column:1/-1}.form-card{padding:16px}.days{justify-content:space-between}.days span{width:39px;height:39px}.help-button{width:36px;height:36px;min-width:36px}.help-dialog{max-height:calc(100vh - 24px);overflow:auto}.help-dialog section{padding:20px}.range-tabs{width:100%;overflow:auto}.range-tabs button{min-width:68px;flex:1;padding:10px 8px}.health-summary,.decision-hero{grid-template-columns:auto 1fr}.health-summary>span,.decision-hero>button{grid-column:1/-1}.decision-hero>button{width:100%}.decision-row{display:grid;gap:4px}.decision-row strong{text-align:left}.calibration-actions button{width:100%}.section-title{display:grid}.section-title>button{width:100%}.recipient-events{grid-template-columns:1fr}.recipient-events span{justify-content:flex-start}.test-recipient{width:100%}.toast{left:14px;right:14px;bottom:14px}}
       @media(max-width:450px){.stats{grid-template-columns:1fr}.header-actions select{max-width:105px}.brand>ha-icon{display:none}}
     `;
   }

@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+from homeassistant.const import Platform
+
 DOMAIN = "watering_manager"
 STORAGE_KEY = DOMAIN
 STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.2.1"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.3.0"
 EVENT_UPDATED = f"{DOMAIN}_updated"
+PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH]
+DATA_SCHEMA_VERSION = 2
 
 DEFAULT_SYSTEM = {
     "name": "New watering system",
@@ -23,8 +27,12 @@ DEFAULT_SYSTEM = {
     "weather_entity": "",
     "rain_sensor": "",
     "flow_sensor": "",
+    "water_meter_sensor": "",
+    "et0_sensor": "",
     "flow_minimum": 0.1,
     "flow_maximum": 100,
+    "normal_flow_rate": 0,
+    "flow_tolerance_percent": 30,
     "flow_grace_seconds": 10,
     "emergency_max_runtime": 45,
     "valve_confirmation_seconds": 5,
@@ -59,6 +67,20 @@ DEFAULT_SYSTEM = {
     "soak_cycles": 1,
     "soak_pause_minutes": 5,
     "simultaneous_group": "default",
+    "plant_profile": "medium",
+    "crop_coefficient": 0.8,
+    "pot_shape": "round",
+    "pot_count": 1,
+    "pot_diameter_cm": 30,
+    "pot_length_cm": 30,
+    "pot_width_cm": 30,
+    "irrigation_efficiency_percent": 90,
+    "water_balance_enabled": False,
+    "water_balance_capacity_mm": 25,
+    "water_balance_trigger_mm": 3,
+    "paused_until": "",
+    "maintenance_mode": False,
+    "valve_test_seconds": 10,
     "notes": "",
 }
 

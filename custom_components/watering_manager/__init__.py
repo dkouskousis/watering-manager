@@ -18,6 +18,7 @@ from .const import (
     PANEL_MODULE_URL,
     PANEL_STATIC_URL,
     PANEL_URL,
+    PLATFORMS,
 )
 from .manager import WateringManager
 from .websocket import async_register_websocket_api
@@ -30,6 +31,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = manager
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     frontend_path = Path(__file__).parent / "frontend" / "watering-manager-panel.js"
     await hass.http.async_register_static_paths(
@@ -45,7 +47,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async_register_built_in_panel(
         hass,
         component_name="custom",
-        sidebar_title="Πότισμα" if hass.config.language.startswith("el") else "Watering",
+        sidebar_title="Πότισμα"
+        if hass.config.language.startswith("el")
+        else "Watering",
         sidebar_icon="mdi:sprinkler-variant",
         frontend_url_path=PANEL_URL,
         config={
@@ -64,6 +68,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Watering Manager."""
+    if not await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        return False
     manager: WateringManager = hass.data[DOMAIN].pop(entry.entry_id)
     await manager.async_unload()
     async_remove_panel(hass, PANEL_URL)
