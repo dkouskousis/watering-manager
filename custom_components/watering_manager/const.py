@@ -8,7 +8,7 @@ STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.1.5"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.1.6"
 EVENT_UPDATED = f"{DOMAIN}_updated"
 
 DEFAULT_SYSTEM = {
@@ -19,6 +19,7 @@ DEFAULT_SYSTEM = {
     "moisture_sensor_1": "",
     "moisture_sensor_2": "",
     "soil_temperature_sensor": "",
+    "soil_temperature_sensor_2": "",
     "weather_entity": "",
     "rain_sensor": "",
     "flow_sensor": "",
