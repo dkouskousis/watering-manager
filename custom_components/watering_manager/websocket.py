@@ -112,6 +112,58 @@ def async_register_websocket_api(
             return
         connection.send_result(msg["id"], None)
 
+    @websocket_api.websocket_command(
+        {
+            probatio.Required("type"): "watering_manager/test_notification",
+            probatio.Required("system_id"): str,
+        }
+    )
+    @websocket_api.require_admin
+    @websocket_api.async_response
+    async def test_notification(hass, connection, msg):
+        try:
+            await manager.async_test_notification(msg["system_id"])
+        except ValueError as err:
+            connection.send_error(msg["id"], str(err), str(err))
+            return
+        connection.send_result(msg["id"], None)
+
+    @websocket_api.websocket_command(
+        {
+            probatio.Required("type"): "watering_manager/start_calibration",
+            probatio.Required("system_id"): str,
+            probatio.Required("kind"): str,
+        }
+    )
+    @websocket_api.require_admin
+    @websocket_api.async_response
+    async def start_calibration(hass, connection, msg):
+        if msg["kind"] not in {"flow", "duration"}:
+            connection.send_error(msg["id"], "invalid_kind", "invalid_kind")
+            return
+        try:
+            await manager.async_start_calibration(msg["system_id"], msg["kind"])
+        except ValueError as err:
+            connection.send_error(msg["id"], str(err), str(err))
+            return
+        connection.send_result(msg["id"], None)
+
+    @websocket_api.websocket_command(
+        {
+            probatio.Required("type"): "watering_manager/apply_calibration",
+            probatio.Required("system_id"): str,
+        }
+    )
+    @websocket_api.require_admin
+    @websocket_api.async_response
+    async def apply_calibration(hass, connection, msg):
+        try:
+            system = await manager.async_apply_calibration(msg["system_id"])
+        except ValueError as err:
+            connection.send_error(msg["id"], str(err), str(err))
+            return
+        connection.send_result(msg["id"], system)
+
     for command in (
         get_state,
         create_system,
@@ -119,5 +171,8 @@ def async_register_websocket_api(
         delete_system,
         run_system,
         stop_system,
+        test_notification,
+        start_calibration,
+        apply_calibration,
     ):
         websocket_api.async_register_command(hass, command)
