@@ -8,7 +8,7 @@ STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.1.6"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.2.0"
 EVENT_UPDATED = f"{DOMAIN}_updated"
 
 DEFAULT_SYSTEM = {
@@ -26,6 +26,19 @@ DEFAULT_SYSTEM = {
     "flow_minimum": 0.1,
     "flow_maximum": 100,
     "flow_grace_seconds": 10,
+    "emergency_max_runtime": 45,
+    "valve_confirmation_seconds": 5,
+    "leak_flow_threshold": 0.05,
+    "notification_service": "",
+    "notify_failures": True,
+    "notify_warnings": True,
+    "notify_success": False,
+    "post_check_enabled": True,
+    "post_check_delay_minutes": 30,
+    "post_check_min_increase": 5,
+    "flow_calibration_seconds": 30,
+    "duration_calibration_minutes": 2,
+    "duration_calibration_wait_minutes": 15,
     "days": [0, 2, 4],
     "start_time": "07:30",
     "manual_duration": 10,
