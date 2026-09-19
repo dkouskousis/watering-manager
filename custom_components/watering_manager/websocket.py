@@ -8,6 +8,7 @@ import probatio
 
 from homeassistant.components import websocket_api
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 from .manager import WateringManager
 
@@ -59,7 +60,7 @@ def async_register_websocket_api(
             system = await manager.async_update_system(
                 msg["system_id"], msg["system"]
             )
-        except ValueError as err:
+        except (ValueError, HomeAssistantError) as err:
             connection.send_error(msg["id"], str(err), str(err))
             return
         connection.send_result(msg["id"], system)
@@ -75,7 +76,7 @@ def async_register_websocket_api(
     async def delete_system(hass, connection, msg):
         try:
             await manager.async_delete_system(msg["system_id"])
-        except ValueError as err:
+        except (ValueError, HomeAssistantError) as err:
             connection.send_error(msg["id"], str(err), str(err))
             return
         connection.send_result(msg["id"], None)
@@ -116,14 +117,17 @@ def async_register_websocket_api(
         {
             probatio.Required("type"): "watering_manager/test_notification",
             probatio.Required("system_id"): str,
+            probatio.Required("destination"): str,
         }
     )
     @websocket_api.require_admin
     @websocket_api.async_response
     async def test_notification(hass, connection, msg):
         try:
-            await manager.async_test_notification(msg["system_id"])
-        except ValueError as err:
+            await manager.async_test_notification(
+                msg["system_id"], msg["destination"]
+            )
+        except (ValueError, HomeAssistantError) as err:
             connection.send_error(msg["id"], str(err), str(err))
             return
         connection.send_result(msg["id"], None)
