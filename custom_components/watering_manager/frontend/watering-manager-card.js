@@ -1,4 +1,4 @@
-const WMC_VERSION = "0.4.1";
+const WMC_VERSION = "0.4.2";
 
 const WMC_TEXT = {
   en: {
@@ -6,6 +6,8 @@ const WMC_TEXT = {
     description: "Live status and controls for one watering system",
     system: "Watering system",
     selectSystem: "Select a system",
+    loadingSystems: "Loading systems…",
+    systemsError: "Unable to load systems. Close the card editor and try again.",
     noSystems: "No watering systems have been created.",
     unavailable: "Watering Manager is unavailable.",
     loading: "Loading watering system…",
@@ -49,6 +51,8 @@ const WMC_TEXT = {
     description: "Ζωντανή κατάσταση και χειρισμός ενός συστήματος ποτίσματος",
     system: "Σύστημα ποτίσματος",
     selectSystem: "Επίλεξε σύστημα",
+    loadingSystems: "Φόρτωση συστημάτων…",
+    systemsError: "Δεν ήταν δυνατή η φόρτωση των συστημάτων. Κλείσε και άνοιξε ξανά τον editor της κάρτας.",
     noSystems: "Δεν έχουν δημιουργηθεί συστήματα ποτίσματος.",
     unavailable: "Το Watering Manager δεν είναι διαθέσιμο.",
     loading: "Φόρτωση συστήματος…",
@@ -150,7 +154,7 @@ class WateringManagerCard extends HTMLElement {
   }
 
   async call(type, data = {}) {
-    return this.hass.connection.sendMessagePromise({
+    return this.hass.callWS({
       type: `watering_manager/${type}`,
       ...data,
     });
@@ -344,10 +348,17 @@ class WateringManagerCardEditor extends HTMLElement {
     super();
     this.attachShadow({ mode: "open" });
     this._systems = [];
+    this._loadingSystems = false;
+    this._loadError = "";
   }
 
   setConfig(config) {
-    this._config = { system_id: config.system_id || "", show_controls: config.show_controls !== false };
+    this._config = {
+      ...config,
+      type: config.type || "custom:watering-manager-card",
+      system_id: config.system_id || "",
+      show_controls: config.show_controls !== false,
+    };
     if (this._hass && !this._systems.length) this.loadSystems();
     else this.render();
   }
@@ -367,21 +378,28 @@ class WateringManagerCardEditor extends HTMLElement {
   }
 
   async loadSystems() {
-    if (!this._hass || !this._config) return;
+    if (!this._hass || !this._config || this._loadingSystems) return;
+    this._loadingSystems = true;
+    this._loadError = "";
+    this.render();
     try {
-      const state = await this._hass.connection.sendMessagePromise({ type: "watering_manager/get_state" });
+      const state = await this._hass.callWS({ type: "watering_manager/get_state" });
       this._systems = state.systems || [];
-      if (!this._config.system_id && this._systems.length) this.change({ system_id: this._systems[0].id });
-    } catch (_error) {
+    } catch (error) {
       this._systems = [];
+      this._loadError = error.message || String(error);
+    } finally {
+      this._loadingSystems = false;
     }
     this.render();
   }
 
   render() {
     if (!this.shadowRoot || !this._config) return;
-    this.shadowRoot.innerHTML = `<style>:host{display:block}*{box-sizing:border-box}.editor{display:grid;gap:18px;padding:8px 0 16px}label{display:grid;gap:7px;color:var(--primary-text-color);font-size:13px;font-weight:600}select{width:100%;padding:11px 12px;border:1px solid var(--divider-color);border-radius:9px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}.toggle{display:flex;align-items:center;gap:10px}.toggle input{width:20px;height:20px}</style><div class="editor">
-      <label>${this.t("system")}<select id="system"><option value="">${this.t("selectSystem")}</option>${this._systems.map((system) => `<option value="${system.id}" ${system.id === this._config.system_id ? "selected" : ""}>${this.esc(system.name)}</option>`).join("")}</select></label>
+    const placeholder = this._loadingSystems ? this.t("loadingSystems") : this.t("selectSystem");
+    this.shadowRoot.innerHTML = `<style>:host{display:block}*{box-sizing:border-box}.editor{display:grid;gap:18px;padding:8px 0 16px}label{display:grid;gap:7px;color:var(--primary-text-color);font-size:13px;font-weight:600}select{width:100%;padding:11px 12px;border:1px solid var(--divider-color);border-radius:9px;background:var(--card-background-color);color:var(--primary-text-color);font:inherit}.toggle{display:flex;align-items:center;gap:10px}.toggle input{width:20px;height:20px}.error{display:flex;align-items:flex-start;gap:8px;padding:10px;border-radius:9px;background:color-mix(in srgb,var(--error-color) 12%,transparent);color:var(--error-color);font-size:12px}.error ha-icon{flex:none;--mdc-icon-size:18px}</style><div class="editor">
+      <label>${this.t("system")}<select id="system" ${this._loadingSystems ? "disabled" : ""}><option value="">${placeholder}</option>${this._systems.map((system) => `<option value="${system.id}" ${system.id === this._config.system_id ? "selected" : ""}>${this.esc(system.name)}</option>`).join("")}</select></label>
+      ${this._loadError ? `<div class="error"><ha-icon icon="mdi:alert-circle-outline"></ha-icon><span>${this.t("systemsError")}</span></div>` : ""}
       <label class="toggle"><input id="controls" type="checkbox" ${this._config.show_controls ? "checked" : ""}>${this.t("showControls")}</label>
     </div>`;
     this.shadowRoot.getElementById("system")?.addEventListener("change", (event) => this.change({ system_id: event.target.value }));
