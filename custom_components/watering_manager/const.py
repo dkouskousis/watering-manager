@@ -10,7 +10,7 @@ STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.3.3"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.3.4"
 EVENT_UPDATED = f"{DOMAIN}_updated"
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH]
 DATA_SCHEMA_VERSION = 4
