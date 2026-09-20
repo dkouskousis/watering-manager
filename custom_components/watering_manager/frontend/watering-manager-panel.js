@@ -1,4 +1,4 @@
-const WM_VERSION = "0.4.0";
+const WM_VERSION = "0.4.1";
 
 const WM_TRANSLATIONS = {
   en: {

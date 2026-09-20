@@ -1,4 +1,4 @@
-const WMC_VERSION = "0.4.0";
+const WMC_VERSION = "0.4.1";
 
 const WMC_TEXT = {
   en: {
@@ -23,7 +23,6 @@ const WMC_TEXT = {
     soilSensor: "Soil sensor",
     moisture: "Moisture",
     soilTemperature: "Soil temperature",
-    weather: "Weather",
     battery: "Valve battery",
     runNow: "Run now",
     stop: "Stop",
@@ -67,7 +66,6 @@ const WMC_TEXT = {
     soilSensor: "Αισθητήρας χώματος",
     moisture: "Υγρασία",
     soilTemperature: "Θερμοκρασία χώματος",
-    weather: "Καιρός",
     battery: "Μπαταρία βάνας",
     runNow: "Πότισμα τώρα",
     stop: "Διακοπή",
@@ -205,10 +203,9 @@ class WateringManagerCard extends HTMLElement {
       this.sensorCard(1, system.moisture_sensor_1, system.soil_temperature_sensor),
       this.sensorCard(2, system.moisture_sensor_2, system.soil_temperature_sensor_2),
     ].filter(Boolean).join("");
-    const environment = [
-      system.weather_entity ? this.environmentItem("mdi:weather-partly-cloudy", this.t("weather"), this.weather(system.weather_entity)) : "",
-      system.battery_sensor ? this.environmentItem("mdi:battery", this.t("battery"), this.entityValue(system.battery_sensor)) : "",
-    ].filter(Boolean).join("");
+    const environment = system.battery_sensor
+      ? this.environmentItem("mdi:battery", this.t("battery"), this.entityValue(system.battery_sensor))
+      : "";
     const duration = system.mode === "auto" ? `${system.minimum_duration}–${system.maximum_duration} ${this.t("minutes")}` : `${system.manual_duration} ${this.t("minutes")}`;
 
     return `<ha-card class="${this.running ? "is-running" : ""}">
@@ -296,18 +293,6 @@ class WateringManagerCard extends HTMLElement {
     return `${entity.state}${unit ? ` ${unit}` : ""}`;
   }
 
-  weather(entityId) {
-    const entity = this.hass?.states?.[entityId];
-    if (!entity || ["unknown", "unavailable"].includes(entity.state)) return "—";
-    const condition = this._language === "el" ? ({
-      sunny: "Ηλιοφάνεια", clear: "Καθαρός", cloudy: "Συννεφιά", partlycloudy: "Μερική συννεφιά",
-      rainy: "Βροχή", pouring: "Έντονη βροχή", fog: "Ομίχλη", windy: "Άνεμος",
-    })[entity.state] || entity.state : entity.state.replaceAll("_", " ");
-    const temperature = entity.attributes.temperature;
-    const unit = entity.attributes.temperature_unit || "°C";
-    return `${condition}${temperature == null ? "" : ` · ${temperature} ${unit}`}`;
-  }
-
   nextRun(system) {
     if (!system.enabled || system.maintenance_mode || !system.days?.length) return this.t("never");
     const now = new Date();
@@ -363,7 +348,8 @@ class WateringManagerCardEditor extends HTMLElement {
 
   setConfig(config) {
     this._config = { system_id: config.system_id || "", show_controls: config.show_controls !== false };
-    this.render();
+    if (this._hass && !this._systems.length) this.loadSystems();
+    else this.render();
   }
 
   set hass(value) {
