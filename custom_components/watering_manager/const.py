@@ -10,7 +10,7 @@ STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.3.0"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.3.1"
 EVENT_UPDATED = f"{DOMAIN}_updated"
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH]
 DATA_SCHEMA_VERSION = 2
@@ -25,7 +25,6 @@ DEFAULT_SYSTEM = {
     "soil_temperature_sensor": "",
     "soil_temperature_sensor_2": "",
     "weather_entity": "",
-    "rain_sensor": "",
     "flow_sensor": "",
     "water_meter_sensor": "",
     "et0_sensor": "",
@@ -59,9 +58,6 @@ DEFAULT_SYSTEM = {
     "wet_threshold": 60,
     "sensor_max_age_minutes": 120,
     "sensor_failure": "skip",
-    "exposure": "exposed",
-    "rain_reach_percent": 100,
-    "measured_rain_threshold": 5,
     "weather_sensitivity": 50,
     "minimum_interval_hours": 12,
     "soak_cycles": 1,

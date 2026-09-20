@@ -151,7 +151,7 @@ def async_register_websocket_api(hass: HomeAssistant, manager: WateringManager) 
     async def test_notification(hass, connection, msg):
         try:
             await manager.async_test_notification(msg["system_id"], msg["destination"])
-        except (ValueError, HomeAssistantError) as err:
+        except (ValueError, RuntimeError, HomeAssistantError) as err:
             connection.send_error(msg["id"], str(err), str(err))
             return
         connection.send_result(msg["id"], None)

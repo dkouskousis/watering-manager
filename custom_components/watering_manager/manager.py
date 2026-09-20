@@ -45,6 +45,7 @@ class WateringManager:
         self.calibrations: dict[str, dict[str, Any]] = {}
         self.water_balances: dict[str, dict[str, Any]] = {}
         self.aggregates: dict[str, dict[str, dict[str, Any]]] = {}
+        self.notification_logs: list[dict[str, Any]] = []
         self._post_check_tasks: dict[str, asyncio.Task[None]] = {}
         self._calibration_tasks: dict[str, asyncio.Task[None]] = {}
         self._watchdog_tasks: dict[str, asyncio.Task[None]] = {}
@@ -55,17 +56,24 @@ class WateringManager:
     async def async_setup(self) -> None:
         """Load stored data and start the scheduler."""
         data = await self.store.async_load() or {}
+        legacy_rain_data_removed = False
         self.systems = data.get("systems", {})
         for system in self.systems.values():
             for key, value in DEFAULT_SYSTEM.items():
                 system.setdefault(key, deepcopy(value))
+            legacy_rain_data_removed |= self._remove_legacy_rain_settings(system)
             self._migrate_notification_target(system)
         self.logs = data.get("logs", [])[-LOG_LIMIT:]
         self.persisted_runs = data.get("active_runs", {})
         self.pending_checks = data.get("pending_checks", {})
         self.calibrations = data.get("calibrations", {})
         self.water_balances = data.get("water_balances", {})
+        for balance in self.water_balances.values():
+            if "effective_rain_mm" in balance:
+                balance.pop("effective_rain_mm")
+                legacy_rain_data_removed = True
         self.aggregates = data.get("aggregates", {})
+        self.notification_logs = data.get("notification_logs", [])[-200:]
         if not self.aggregates and self.logs:
             self._rebuild_aggregates()
         for system_id in self.systems:
@@ -73,6 +81,8 @@ class WateringManager:
         await self._async_recover_interrupted_runs()
         self._recover_calibration_states()
         self._restore_pending_checks()
+        if legacy_rain_data_removed:
+            await self._async_save()
         self._cancel_scheduler = async_track_time_interval(
             self.hass,
             self._async_scheduler_tick,
@@ -116,6 +126,7 @@ class WateringManager:
             "water_balances": self.water_balances,
             "aggregates": self.aggregates,
             "schema_version": DATA_SCHEMA_VERSION,
+            "notification_logs": self.notification_logs[-100:],
         }
 
     async def async_create_system(self, values: dict[str, Any]) -> dict[str, Any]:
@@ -166,6 +177,9 @@ class WateringManager:
                 raise ValueError("watering_group_is_busy")
         del self.systems[system_id]
         self.logs = [log for log in self.logs if log["system_id"] != system_id]
+        self.notification_logs = [
+            log for log in self.notification_logs if log["system_id"] != system_id
+        ]
         for check_id, check in list(self.pending_checks.items()):
             if check.get("system_id") == system_id:
                 self.pending_checks.pop(check_id, None)
@@ -350,6 +364,21 @@ class WateringManager:
                 raise ValueError("notification_recipient_name_required")
 
     @staticmethod
+    def _remove_legacy_rain_settings(system: dict[str, Any]) -> bool:
+        """Remove measured-rain settings retired in version 0.3.1."""
+        removed = False
+        for key in (
+            "rain_sensor",
+            "exposure",
+            "rain_reach_percent",
+            "measured_rain_threshold",
+        ):
+            if key in system:
+                system.pop(key)
+                removed = True
+        return removed
+
+    @staticmethod
     def _migrate_notification_target(system: dict[str, Any]) -> None:
         """Convert the previous single notifier setting once, preserving choices."""
         if system.get("notification_targets") or not system.get("notification_service"):
@@ -473,13 +502,6 @@ class WateringManager:
             weather = inputs["weather"]
             duration *= weather["factor"]
 
-            rain = inputs["rain_mm"]
-            rain_reach = self._rain_reach_factor(system)
-            if rain is not None and rain * rain_reach >= float(
-                system["measured_rain_threshold"]
-            ):
-                return {"duration": 0, "reason": "measured_rain", "inputs": inputs}
-
         result = {
             "duration": self._bounded_duration(system, duration),
             "reason": reason,
@@ -528,7 +550,6 @@ class WateringManager:
                 self._read_numeric(system.get("soil_temperature_sensor_2", "")),
             ],
             "weather": self._weather_adjustment(system),
-            "rain_mm": self._read_numeric(system.get("rain_sensor", "")),
         }
 
     async def async_preview_decision(self, system_id: str) -> dict[str, Any]:
@@ -906,6 +927,7 @@ class WateringManager:
                 title,
                 f"watering_manager_{system['id']}_{level}",
             )
+        recorded = False
         for target in system.get("notification_targets", []):
             if not target.get(level, False):
                 continue
@@ -913,10 +935,26 @@ class WateringManager:
                 await self._async_send_notification(
                     str(target["destination"]), title, message
                 )
-            except (ValueError, RuntimeError, HomeAssistantError):
+                self._record_notification(
+                    system, target, level, reason, "sent", detail=detail
+                )
+                recorded = True
+            except (ValueError, RuntimeError, HomeAssistantError) as err:
+                self._record_notification(
+                    system,
+                    target,
+                    level,
+                    reason,
+                    "failed",
+                    detail=detail,
+                    error=str(err),
+                )
+                recorded = True
                 _LOGGER.exception(
                     "Unable to notify %s for %s", target.get("name"), system["name"]
                 )
+        if recorded:
+            await self._async_changed()
 
     def _create_repair_notification(self, system: dict[str, Any], reason: str) -> None:
         persistent_notification.async_create(
@@ -929,18 +967,59 @@ class WateringManager:
 
     async def async_test_notification(self, system_id: str, destination: str) -> None:
         system = self._get_system(system_id)
-        configured = {
-            str(item.get("destination"))
-            for item in system.get("notification_targets", [])
-        }
-        if destination not in configured:
+        target = next(
+            (
+                item
+                for item in system.get("notification_targets", [])
+                if str(item.get("destination")) == destination
+            ),
+            None,
+        )
+        if target is None:
             raise ValueError("notification_destination_not_configured")
         greek = self.hass.config.language.startswith("el")
-        await self._async_send_notification(
-            destination,
-            f"Watering Manager · {system['name']}",
-            "Δοκιμαστική ειδοποίηση" if greek else "Test notification",
+        try:
+            await self._async_send_notification(
+                destination,
+                f"Watering Manager · {system['name']}",
+                "Δοκιμαστική ειδοποίηση" if greek else "Test notification",
+            )
+        except (ValueError, RuntimeError, HomeAssistantError) as err:
+            self._record_notification(
+                system, target, "test", "test_notification", "failed", error=str(err)
+            )
+            await self._async_changed()
+            raise
+        self._record_notification(system, target, "test", "test_notification", "sent")
+        await self._async_changed()
+
+    def _record_notification(
+        self,
+        system: dict[str, Any],
+        target: dict[str, Any],
+        level: str,
+        reason: str,
+        status: str,
+        *,
+        detail: str | None = None,
+        error: str | None = None,
+    ) -> None:
+        self.notification_logs.append(
+            {
+                "id": uuid4().hex,
+                "system_id": system["id"],
+                "system_name": system["name"],
+                "timestamp": datetime.now(UTC).isoformat(),
+                "recipient_name": str(target.get("name", "")),
+                "destination": str(target.get("destination", "")),
+                "level": level,
+                "reason": reason,
+                "detail": detail,
+                "status": status,
+                "error": error,
+            }
         )
+        self.notification_logs = self.notification_logs[-200:]
 
     async def _async_send_notification(
         self, destination: str, title: str, message: str
@@ -1234,7 +1313,6 @@ class WateringManager:
             add(f"soil_temperature_{index}", bool(entity_id), value is not None, value)
         for key, entity_key in (
             ("weather", "weather_entity"),
-            ("rain", "rain_sensor"),
             ("flow", "flow_sensor"),
         ):
             entity_id = system.get(entity_key, "")
@@ -1471,13 +1549,6 @@ class WateringManager:
         }
 
     @staticmethod
-    def _rain_reach_factor(system: dict[str, Any]) -> float:
-        exposure = {"exposed": 1.0, "partial": 0.5, "covered": 0.0}.get(
-            system.get("exposure"), 1.0
-        )
-        return exposure * float(system.get("rain_reach_percent", 100)) / 100
-
-    @staticmethod
     def _pot_area_m2(system: dict[str, Any]) -> float:
         count = float(system.get("pot_count", 1))
         if system.get("pot_shape") == "rectangular":
@@ -1516,7 +1587,6 @@ class WateringManager:
                 "deficit_mm": 0.0,
                 "last_et0_mm": None,
                 "last_etc_mm": None,
-                "effective_rain_mm": None,
                 "quality": "not_started",
                 "skipped_days": 0,
                 "updated_at": None,
@@ -1539,8 +1609,6 @@ class WateringManager:
         )
         skipped = max(0, (today - previous_date).days - 1) if previous_date else 0
         etc = float(et0["value"]) * float(system["crop_coefficient"])
-        rain = self._read_numeric(system.get("rain_sensor", ""))
-        effective_rain = max(0.0, rain or 0.0) * self._rain_reach_factor(system)
         capacity = float(system["water_balance_capacity_mm"])
         current.update(
             date=today.isoformat(),
@@ -1549,14 +1617,13 @@ class WateringManager:
                     0.0,
                     min(
                         capacity,
-                        float(current.get("deficit_mm", 0)) + etc - effective_rain,
+                        float(current.get("deficit_mm", 0)) + etc,
                     ),
                 ),
                 3,
             ),
             last_et0_mm=round(float(et0["value"]), 3),
             last_etc_mm=round(etc, 3),
-            effective_rain_mm=round(effective_rain, 3),
             quality="gap_detected" if skipped else "good",
             skipped_days=skipped,
             updated_at=datetime.now(UTC).isoformat(),
@@ -1800,6 +1867,7 @@ class WateringManager:
                 "calibrations": self.calibrations,
                 "water_balances": self.water_balances,
                 "aggregates": self.aggregates,
+                "notification_logs": self.notification_logs,
                 "schema_version": DATA_SCHEMA_VERSION,
             }
         )
