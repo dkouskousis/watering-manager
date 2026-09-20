@@ -5,8 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 from homeassistant.components.frontend import (
+    add_extra_js_url,
     async_register_built_in_panel,
     async_remove_panel,
+    remove_extra_js_url,
 )
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
@@ -14,6 +16,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 
 from .const import (
+    CARD_MODULE_URL,
+    CARD_STATIC_URL,
     DOMAIN,
     PANEL_ELEMENT,
     PANEL_MODULE_URL,
@@ -42,16 +46,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DOMAIN][entry.entry_id] = manager
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    frontend_path = Path(__file__).parent / "frontend" / "watering-manager-panel.js"
+    frontend_dir = Path(__file__).parent / "frontend"
     await hass.http.async_register_static_paths(
         [
             StaticPathConfig(
                 PANEL_STATIC_URL,
-                str(frontend_path),
+                str(frontend_dir / "watering-manager-panel.js"),
                 cache_headers=False,
-            )
+            ),
+            StaticPathConfig(
+                CARD_STATIC_URL,
+                str(frontend_dir / "watering-manager-card.js"),
+                cache_headers=False,
+            ),
         ]
     )
+
+    add_extra_js_url(hass, CARD_MODULE_URL)
 
     async_register_built_in_panel(
         hass,
@@ -81,5 +92,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
     manager: WateringManager = hass.data[DOMAIN].pop(entry.entry_id)
     await manager.async_unload()
+    remove_extra_js_url(hass, CARD_MODULE_URL)
     async_remove_panel(hass, PANEL_URL)
     return True
