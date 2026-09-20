@@ -38,7 +38,7 @@ class WateringManagerEntity(Entity):
             name=system.get("name", "Watering system"),
             manufacturer="Watering Manager",
             model="Managed irrigation zone",
-            sw_version="0.4.4",
+            sw_version="0.4.5",
         )
 
     async def async_added_to_hass(self) -> None:
