@@ -4,7 +4,7 @@ Watering Manager is a Home Assistant custom integration for managing multiple ir
 
 > Status: early development release. Test with supervision before relying on it unattended.
 
-Current development version: **0.3.4**
+Current development version: **0.3.5**
 
 ## Current features
 
@@ -18,6 +18,7 @@ Current development version: **0.3.4**
 - Safe short watering when the sensors disagree.
 - Dry-to-wet base duration, minimum and maximum duration.
 - Optional current-weather correction without requiring rain hardware.
+- Configurable rain exposure so sheltered zones ignore the weather entity's rain condition.
 - Minimum interval between runs.
 - Cycle-and-soak watering.
 - Persistent decision and watering logs.

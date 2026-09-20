@@ -317,6 +317,8 @@ class WateringManager:
             raise ValueError("flow_tolerance_invalid")
         if float(system["normal_flow_rate"]) < 0:
             raise ValueError("normal_flow_invalid")
+        if system.get("rain_exposure") not in {"exposed", "sheltered"}:
+            raise ValueError("rain_exposure_invalid")
         if not 0 <= float(system["battery_low_threshold"]) <= 100:
             raise ValueError("battery_threshold_invalid")
         paused_until = str(system.get("paused_until", "")).strip()
@@ -1557,9 +1559,16 @@ class WateringManager:
 
     def _weather_adjustment(self, system: dict[str, Any]) -> dict[str, Any]:
         entity_id = system.get("weather_entity", "")
+        rain_exposure = system.get("rain_exposure", "exposed")
         state = self.hass.states.get(entity_id) if entity_id else None
         if state is None:
-            return {"factor": 1.0, "condition": None, "temperature": None}
+            return {
+                "factor": 1.0,
+                "condition": None,
+                "temperature": None,
+                "rain_exposure": rain_exposure,
+                "rain_adjustment_applied": False,
+            }
         temperature = state.attributes.get("temperature")
         condition = state.state
         raw_factor = 1.0
@@ -1572,7 +1581,13 @@ class WateringManager:
                 raw_factor -= 0.15
         if condition in {"sunny", "clear-night"}:
             raw_factor += 0.1
-        elif condition in {"rainy", "pouring", "snowy", "snowy-rainy"}:
+        rain_adjustment_applied = condition in {
+            "rainy",
+            "pouring",
+            "snowy",
+            "snowy-rainy",
+        } and rain_exposure == "exposed"
+        if rain_adjustment_applied:
             raw_factor -= 0.35
         sensitivity = float(system["weather_sensitivity"]) / 100
         factor = 1 + (raw_factor - 1) * sensitivity
@@ -1580,6 +1595,8 @@ class WateringManager:
             "factor": round(max(0.5, min(1.5, factor)), 2),
             "condition": condition,
             "temperature": temperature,
+            "rain_exposure": rain_exposure,
+            "rain_adjustment_applied": rain_adjustment_applied,
         }
 
     @staticmethod

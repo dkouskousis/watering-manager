@@ -1,4 +1,4 @@
-const WM_VERSION = "0.3.4";
+const WM_VERSION = "0.3.5";
 
 const WM_TRANSLATIONS = {
   en: {
@@ -20,7 +20,7 @@ const WM_TRANSLATIONS = {
     dryThreshold: "Dry threshold", wetThreshold: "Wet threshold",
     maxSensorAge: "Maximum sensor age", failureMode: "If both sensors fail",
     skip: "Skip watering", useBase: "Use base duration",
-    weatherSensitivity: "Weather sensitivity", minimumInterval: "Minimum interval",
+    weatherSensitivity: "Weather sensitivity", rainExposure: "Rain exposure", exposed: "Exposed to rain", sheltered: "Sheltered", minimumInterval: "Minimum interval",
     soakCycles: "Watering cycles", soakPause: "Pause between cycles",
     safety: "Safety", currentStatus: "Current status", idle: "Idle", running: "Running",
     lastRun: "Last run", lastReason: "Last decision", lastDuration: "Last duration",
@@ -72,7 +72,7 @@ const WM_TRANSLATIONS = {
     dryThreshold: "Όριο στεγνού", wetThreshold: "Όριο υγρού",
     maxSensorAge: "Μέγιστη ηλικία μέτρησης", failureMode: "Αν αποτύχουν και οι δύο αισθητήρες",
     skip: "Παράλειψη ποτίσματος", useBase: "Χρήση βασικής διάρκειας",
-    weatherSensitivity: "Ευαισθησία στον καιρό", minimumInterval: "Ελάχιστο διάστημα",
+    weatherSensitivity: "Ευαισθησία στον καιρό", rainExposure: "Έκθεση στη βροχή", exposed: "Βρέχεται", sheltered: "Σε υπόστεγο", minimumInterval: "Ελάχιστο διάστημα",
     soakCycles: "Κύκλοι ποτίσματος", soakPause: "Παύση μεταξύ κύκλων",
     safety: "Ασφάλεια", currentStatus: "Τρέχουσα κατάσταση", idle: "Σε αναμονή", running: "Ποτίζει",
     lastRun: "Τελευταίο πότισμα", lastReason: "Τελευταία απόφαση", lastDuration: "Τελευταία διάρκεια",
@@ -137,7 +137,7 @@ Object.assign(WM_TRANSLATIONS.el, {
 const WM_HELP_LABELS = {
   mode: "mode", base_duration: "baseDuration", conflict_duration: "conflictDuration",
   dry_threshold: "dryThreshold", wet_threshold: "wetThreshold",
-  weather_sensitivity: "weatherSensitivity", sensor_max_age_minutes: "maxSensorAge",
+  weather_sensitivity: "weatherSensitivity", rain_exposure: "rainExposure", sensor_max_age_minutes: "maxSensorAge",
   sensor_failure: "failureMode", minimum_duration: "minDuration",
   maximum_duration: "maxDuration", minimum_interval_hours: "minimumInterval",
   soak_cycles: "soakCycles", soak_pause_minutes: "soakPause", valve_entity: "valve", battery_sensor: "battery", battery_low_threshold: "batteryLowThreshold",
@@ -175,6 +175,10 @@ const WM_HELP = {
   weather_sensitivity: {
     el: "Ορίζει πόσο έντονα ο τρέχων καιρός επηρεάζει τη διάρκεια. 0% αγνοεί τον καιρό, 100% εφαρμόζει τη μέγιστη διόρθωση. Ο καιρός είναι διορθωτικός παράγοντας και δεν αποδεικνύει ότι έβρεξε στις γλάστρες.",
     en: "Controls how strongly current weather affects duration. 0% ignores weather and 100% applies the maximum correction. Weather is only an adjustment and does not prove that rain reached the pots.",
+  },
+  rain_exposure: {
+    el: "Βρέχεται: όταν το weather entity δείχνει βροχή, το Auto μειώνει τη διάρκεια. Σε υπόστεγο: αγνοείται μόνο η μείωση λόγω βροχής, επειδή το νερό μπορεί να μη φτάνει στις γλάστρες. Η θερμοκρασία και η ηλιοφάνεια συνεχίζουν να επηρεάζουν τη διάρκεια.",
+    en: "Exposed to rain: Auto reduces duration when the weather entity reports rain. Sheltered: only the rain reduction is ignored because rain may not reach the pots. Temperature and sunshine still affect duration.",
   },
   sensor_max_age_minutes: {
     el: "Η μέγιστη ηλικία μιας μέτρησης υγρασίας για να θεωρείται αξιόπιστη. Παλαιότερη μέτρηση χαρακτηρίζεται μη διαθέσιμη και εφαρμόζεται η ρύθμιση αποτυχίας αισθητήρων.",
@@ -476,6 +480,7 @@ class WateringManagerPanel extends HTMLElement {
         ${this.number("dry_threshold", this.t("dryThreshold"), system.dry_threshold, 0, 100, "%")}
         ${this.number("wet_threshold", this.t("wetThreshold"), system.wet_threshold, 0, 100, "%")}
         ${this.number("weather_sensitivity", this.t("weatherSensitivity"), system.weather_sensitivity, 0, 100, "%")}
+        ${this.selectField("rain_exposure", this.t("rainExposure"), system.rain_exposure || "exposed", [["exposed",this.t("exposed")],["sheltered",this.t("sheltered")]])}
         ${this.number("sensor_max_age_minutes", this.t("maxSensorAge"), system.sensor_max_age_minutes, 5, 1440, this.t("minutes"))}
         ${this.selectField("sensor_failure", this.t("failureMode"), system.sensor_failure, [["skip",this.t("skip")],["base_duration",this.t("useBase")]])}
       </div><div class="info-line"><ha-icon icon="mdi:weather-partly-cloudy"></ha-icon>${this.t("weatherInfo")}</div><div class="info-line"><ha-icon icon="mdi:alert-circle-outline"></ha-icon>${this.t("sensorConflict")}</div><div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("optionalSensors")}</div></section>
@@ -546,6 +551,7 @@ class WateringManagerPanel extends HTMLElement {
       <section class="card"><h3>${this.t("decisionInputs")}</h3><div class="decision-list">
         ${moisture}
         <div class="decision-row"><span>${this.t("weather")}</span><strong>${this.esc(inputs.weather?.condition || "—")} · ${inputs.weather?.temperature ?? "—"}° · ×${inputs.weather?.factor ?? "—"}</strong></div>
+        <div class="decision-row"><span>${this.t("rainExposure")}</span><strong>${this.t(inputs.weather?.rain_exposure || "exposed")}</strong></div>
         ${inputs.battery?.entity_id ? `<div class="decision-row"><span>${this.t("batteryLevel")}</span><strong>${inputs.battery.available ? `${inputs.battery.value}${this.esc(inputs.battery.unit || "%")}${inputs.battery.low ? ` · ${this.reason("battery_low")}` : ""}` : this.reason("unavailable")}</strong></div>` : ""}
         <div class="decision-row"><span>${this.t("durationBasis")}</span><strong>${this.esc(inputs.duration_basis || "—")}</strong></div>
       </div></section>
