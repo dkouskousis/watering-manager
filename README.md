@@ -4,14 +4,14 @@ Watering Manager is a Home Assistant custom integration for managing multiple ir
 
 > Status: early development release. Test with supervision before relying on it unattended.
 
-Current development version: **0.3.2**
+Current development version: **0.3.3**
 
 ## Current features
 
 - Dedicated **Watering / Πότισμα** page in the Home Assistant sidebar.
 - Create, edit and delete multiple watering systems without YAML.
 - Greek and English interface, automatically selected from Home Assistant with a manual override.
-- Entity selectors for valves, soil moisture sensors, soil temperature, weather, flow and water meters.
+- Entity selectors for valves, valve battery level, soil moisture sensors, soil temperature, weather, flow and water meters.
 - Weekly schedule and start time.
 - Manual and Auto modes.
 - Two soil moisture sensors with stale-reading detection.
@@ -25,6 +25,7 @@ Current development version: **0.3.2**
 - Persisted fail-safe recovery after Home Assistant restarts or crashes.
 - Valve-close verification, a second close attempt and residual-flow leak checks.
 - Dedicated Notifications tab with multiple recipients, independent event preferences and the last 10 delivery results.
+- Optional low-valve-battery alerts with a configurable threshold and independent recipient preferences.
 - Delayed post-watering verification for each configured moisture sensor.
 - Guided flow and dry-to-wet duration calibration with explicit Apply actions.
 - Mobile-friendly Diagnostics page with live component health and pending checks.
@@ -61,7 +62,7 @@ The weather entity is used only as a duration correction.
 
 ## Important sensor notes
 
-The moisture sensor values must be numeric percentages from `0` to `100`. A cumulative meter must report `L`, `mL`, `m³`, `gal` or `ft³`; use a meter dedicated to the selected irrigation zone when concurrent water users could affect its delta.
+The moisture sensor values must be numeric percentages from `0` to `100`. The optional valve battery sensor should also report a numeric percentage; it is informational and never changes watering duration. A cumulative meter must report `L`, `mL`, `m³`, `gal` or `ft³`; use a meter dedicated to the selected irrigation zone when concurrent water users could affect its delta.
 
 ## Safety
 

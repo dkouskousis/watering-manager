@@ -44,6 +44,7 @@ class WateringManager:
         self.calibrations: dict[str, dict[str, Any]] = {}
         self.aggregates: dict[str, dict[str, dict[str, Any]]] = {}
         self.notification_logs: list[dict[str, Any]] = []
+        self.battery_alerts: dict[str, bool] = {}
         self._post_check_tasks: dict[str, asyncio.Task[None]] = {}
         self._calibration_tasks: dict[str, asyncio.Task[None]] = {}
         self._watchdog_tasks: dict[str, asyncio.Task[None]] = {}
@@ -61,7 +62,7 @@ class WateringManager:
                 system.setdefault(key, deepcopy(value))
             legacy_data_removed |= self._remove_legacy_rain_settings(system)
             legacy_data_removed |= self._remove_legacy_et_settings(system)
-            self._migrate_notification_target(system)
+            legacy_data_removed |= self._migrate_notification_target(system)
         self.logs = data.get("logs", [])[-LOG_LIMIT:]
         self.persisted_runs = data.get("active_runs", {})
         self.pending_checks = data.get("pending_checks", {})
@@ -77,6 +78,7 @@ class WateringManager:
                     bucket.setdefault(f"moisture_{index}_sum", 0.0)
                     bucket.setdefault(f"moisture_{index}_count", 0)
         self.notification_logs = data.get("notification_logs", [])[-200:]
+        self.battery_alerts = data.get("battery_alerts", {})
         if not self.aggregates and self.logs:
             self._rebuild_aggregates()
         await self._async_recover_interrupted_runs()
@@ -127,6 +129,7 @@ class WateringManager:
             "aggregates": self.aggregates,
             "schema_version": DATA_SCHEMA_VERSION,
             "notification_logs": self.notification_logs[-100:],
+            "battery_alerts": self.battery_alerts,
         }
 
     async def async_create_system(self, values: dict[str, Any]) -> dict[str, Any]:
@@ -187,6 +190,7 @@ class WateringManager:
                     task.cancel()
         self.calibrations.pop(system_id, None)
         self.aggregates.pop(system_id, None)
+        self.battery_alerts.pop(system_id, None)
         await self._async_changed()
 
     async def async_run_system(self, system_id: str, trigger: str) -> dict[str, Any]:
@@ -313,6 +317,8 @@ class WateringManager:
             raise ValueError("flow_tolerance_invalid")
         if float(system["normal_flow_rate"]) < 0:
             raise ValueError("normal_flow_invalid")
+        if not 0 <= float(system["battery_low_threshold"]) <= 100:
+            raise ValueError("battery_threshold_invalid")
         paused_until = str(system.get("paused_until", "")).strip()
         if paused_until:
             try:
@@ -377,22 +383,31 @@ class WateringManager:
         return removed
 
     @staticmethod
-    def _migrate_notification_target(system: dict[str, Any]) -> None:
+    def _migrate_notification_target(system: dict[str, Any]) -> bool:
         """Convert the previous single notifier setting once, preserving choices."""
-        if system.get("notification_targets") or not system.get("notification_service"):
-            return
-        service = str(system["notification_service"])
-        if not service.startswith("notify."):
-            service = f"notify.{service}"
-        system["notification_targets"] = [
-            {
-                "name": "Primary recipient",
-                "destination": f"service:{service}",
-                "failure": bool(system.get("notify_failures", True)),
-                "warning": bool(system.get("notify_warnings", True)),
-                "success": bool(system.get("notify_success", False)),
-            }
-        ]
+        changed = False
+        if not system.get("notification_targets") and system.get(
+            "notification_service"
+        ):
+            service = str(system["notification_service"])
+            if not service.startswith("notify."):
+                service = f"notify.{service}"
+            system["notification_targets"] = [
+                {
+                    "name": "Primary recipient",
+                    "destination": f"service:{service}",
+                    "failure": bool(system.get("notify_failures", True)),
+                    "warning": bool(system.get("notify_warnings", True)),
+                    "success": bool(system.get("notify_success", False)),
+                    "low_battery": True,
+                }
+            ]
+            changed = True
+        for target in system.get("notification_targets", []):
+            if "low_battery" not in target:
+                target["low_battery"] = True
+                changed = True
+        return changed
 
     def _calculate_decision(
         self, system: dict[str, Any], trigger: str
@@ -516,6 +531,7 @@ class WateringManager:
                 self._read_numeric(system.get("soil_temperature_sensor_2", "")),
             ],
             "weather": self._weather_adjustment(system),
+            "battery": self._battery_status(system),
         }
 
     async def async_preview_decision(self, system_id: str) -> dict[str, Any]:
@@ -878,11 +894,15 @@ class WateringManager:
         title = (
             f"Πότισμα · {system['name']}" if greek else f"Watering · {system['name']}"
         )
-        reason_text = reason.replace("_", " ")
+        reason_text = (
+            ("Χαμηλή μπαταρία βάνας" if greek else "Low valve battery")
+            if reason == "battery_low"
+            else reason.replace("_", " ")
+        )
         message = f"Συμβάν: {reason_text}" if greek else f"Event: {reason_text}"
         if detail:
             message += f" · {detail}"
-        if level in {"failure", "warning"}:
+        if level in {"failure", "warning", "low_battery"}:
             persistent_notification.async_create(
                 self.hass,
                 message,
@@ -916,6 +936,33 @@ class WateringManager:
                     "Unable to notify %s for %s", target.get("name"), system["name"]
                 )
         if recorded:
+            await self._async_changed()
+
+    async def _async_check_battery_levels(self) -> None:
+        """Notify once when a configured valve battery crosses its low threshold."""
+        state_changed = False
+        for system_id, system in list(self.systems.items()):
+            battery = self._battery_status(system)
+            if not battery["entity_id"]:
+                if self.battery_alerts.pop(system_id, None) is not None:
+                    state_changed = True
+                continue
+            if not battery["available"]:
+                continue
+            was_low = bool(self.battery_alerts.get(system_id, False))
+            is_low = bool(battery["low"])
+            if is_low == was_low:
+                continue
+            self.battery_alerts[system_id] = is_low
+            state_changed = True
+            if is_low:
+                await self._async_notify_user(
+                    system,
+                    "low_battery",
+                    "battery_low",
+                    f"{battery['value']:g}{battery['unit']}",
+                )
+        if state_changed:
             await self._async_changed()
 
     def _create_repair_notification(self, system: dict[str, Any], reason: str) -> None:
@@ -1288,6 +1335,13 @@ class WateringManager:
         meter_entity = system.get("water_meter_sensor", "")
         meter = self._read_cumulative_meter(system)
         add("water_meter", bool(meter_entity), meter is not None, meter)
+        battery = self._battery_status(system)
+        add(
+            "battery",
+            bool(battery["entity_id"]),
+            bool(battery["available"] and not battery["low"]),
+            battery,
+        )
         targets = system.get("notification_targets", [])
         available_targets = sum(
             1
@@ -1335,8 +1389,36 @@ class WateringManager:
             return self.hass.services.has_service("notify", value.split(".", 1)[1])
         return False
 
+    def _battery_status(self, system: dict[str, Any]) -> dict[str, Any]:
+        """Return normalized status for the optional valve battery sensor."""
+        entity_id = str(system.get("battery_sensor", ""))
+        threshold = float(system.get("battery_low_threshold", 20))
+        value = self._read_numeric(entity_id) if entity_id else None
+        state = self.hass.states.get(entity_id) if entity_id else None
+        unit = str(state.attributes.get("unit_of_measurement") or "%") if state else "%"
+        low = value is not None and value <= threshold
+        return {
+            "entity_id": entity_id,
+            "value": value,
+            "unit": unit,
+            "threshold": threshold,
+            "available": value is not None,
+            "low": low,
+            "valid": value is not None and not low,
+            "reason": (
+                "not_configured"
+                if not entity_id
+                else "unavailable"
+                if value is None
+                else "battery_low"
+                if low
+                else None
+            ),
+        }
+
     async def _async_scheduler_tick(self, now: datetime) -> None:
         """Start systems whose local schedule matches the current minute."""
+        await self._async_check_battery_levels()
         local_now = dt_util.as_local(now)
         schedule_key = local_now.strftime("%Y-%m-%d %H:%M")
         current_time = local_now.strftime("%H:%M")
@@ -1691,6 +1773,7 @@ class WateringManager:
                 "calibrations": self.calibrations,
                 "aggregates": self.aggregates,
                 "notification_logs": self.notification_logs,
+                "battery_alerts": self.battery_alerts,
                 "schema_version": DATA_SCHEMA_VERSION,
             }
         )

@@ -10,16 +10,18 @@ STORAGE_VERSION = 1
 PANEL_URL = "watering-manager"
 PANEL_ELEMENT = "watering-manager-panel"
 PANEL_STATIC_URL = "/watering_manager/watering-manager-panel.js"
-PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.3.2"
+PANEL_MODULE_URL = f"{PANEL_STATIC_URL}?v=0.3.3"
 EVENT_UPDATED = f"{DOMAIN}_updated"
 PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH]
-DATA_SCHEMA_VERSION = 3
+DATA_SCHEMA_VERSION = 4
 
 DEFAULT_SYSTEM = {
     "name": "New watering system",
     "enabled": True,
     "mode": "manual",
     "valve_entity": "",
+    "battery_sensor": "",
+    "battery_low_threshold": 20,
     "moisture_sensor_1": "",
     "moisture_sensor_2": "",
     "soil_temperature_sensor": "",
