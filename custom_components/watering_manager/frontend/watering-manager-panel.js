@@ -1,4 +1,4 @@
-const WM_VERSION = "0.3.1";
+const WM_VERSION = "0.3.2";
 
 const WM_TRANSLATIONS = {
   en: {
@@ -8,7 +8,7 @@ const WM_TRANSLATIONS = {
     delete: "Delete", duplicate: "Duplicate", runNow: "Run now", stop: "Stop",
     noSystems: "No watering systems yet.", createFirst: "Create the first system",
     name: "Name", enabled: "Enabled", mode: "Mode", manual: "Manual", auto: "Auto",
-    modeHelp: "Manual always uses the fixed duration. Auto decides whether to water using soil moisture, ET water balance, weather and safety limits.",
+    modeHelp: "Manual always uses the fixed duration. Auto decides whether to water using soil moisture, current weather and safety limits.",
     days: "Watering days", startTime: "Start time", manualDuration: "Manual duration",
     minutes: "minutes", valve: "Valve or switch", moisture1: "Soil moisture sensor 1",
     moisture2: "Soil moisture sensor 2", soilTemperature1: "Soil temperature sensor 1", soilTemperature2: "Soil temperature sensor 2", weather: "Weather entity",
@@ -35,16 +35,16 @@ const WM_TRANSLATIONS = {
     adminOnly: "Only Home Assistant administrators can change settings or operate valves.",
     monday: "Mon", tuesday: "Tue", wednesday: "Wed", thursday: "Thu",
     friday: "Fri", saturday: "Sat", sunday: "Sun",
-    weatherInfo: "Outside ET mode, Auto can use the current weather condition and temperature as a duration correction.",
+    weatherInfo: "Auto can use the current weather condition and temperature as a duration correction.",
     addTitle: "Create watering system", addHelp: "Give the system a name. All entities and automatic settings can be selected immediately afterwards.",
     cancel: "Cancel", create: "Create", percent: "%", hours: "hours",
     sensorStale: "minutes", systemsCount: "systems", updated: "Updated",
     help: "Help", close: "Close", day: "Day", week: "Week", month: "Month",
     totalWateringTime: "Total watering time", totalWaterVolume: "Total water volume",
-    averageTemperature: "Average air temperature", averageSoilTemperature1: "Average soil temperature 1", averageSoilTemperature2: "Average soil temperature 2", averageMoisture: "Average soil moisture",
+    averageTemperature: "Average air temperature", averageSoilTemperature1: "Average soil temperature 1", averageSoilTemperature2: "Average soil temperature 2", averageMoisture1: "Average soil moisture 1", averageMoisture2: "Average soil moisture 2",
     wateringRuns: "Watering runs", successfulRuns: "Completed", skippedRuns: "Skipped",
     failedRuns: "Failed", durationChart: "Watering time by period", noStatistics: "No watering data for this period.",
-    statisticsNote: "Air temperature, soil temperature and moisture averages use readings captured when watering was evaluated. Soil temperature is recorded for information only and never changes watering duration. Water volume is estimated from the configured flow sensor and is shown only for supported flow-rate units.",
+    statisticsNote: "Air temperature, soil temperature and each soil-moisture average use readings captured when watering was evaluated. Soil temperature is recorded for information only and never changes watering duration. Water volume is estimated from the configured flow sensor and is shown only for supported flow-rate units.",
     volumePartial: "Volume is based only on runs with available flow data.",
     emergencyRuntime: "Emergency maximum valve runtime", valveConfirmation: "Valve close confirmation delay", leakFlow: "Maximum flow after close",
     notifications: "Notifications", notificationService: "Notification destination", notifyFailures: "Failures and safety events", notifyWarnings: "Warnings and moisture verification", notifySuccess: "Successful watering", testNotification: "Test", recipientName: "Recipient name", addRecipient: "Add recipient", removeRecipient: "Remove recipient", noNotificationTargets: "No notification recipients configured.", notificationRecipientsHelp: "Each recipient can receive a different combination of events. Critical failures are always also shown in Home Assistant.", modernEntity: "Notify entities", legacyService: "Legacy notify services",
@@ -60,7 +60,7 @@ const WM_TRANSLATIONS = {
     delete: "Διαγραφή", duplicate: "Αντιγραφή", runNow: "Πότισμα τώρα", stop: "Διακοπή",
     noSystems: "Δεν υπάρχουν ακόμη συστήματα ποτίσματος.", createFirst: "Δημιουργία πρώτου συστήματος",
     name: "Όνομα", enabled: "Ενεργό", mode: "Λειτουργία", manual: "Manual", auto: "Auto",
-    modeHelp: "Το Manual χρησιμοποιεί πάντα τη σταθερή διάρκεια. Το Auto αποφασίζει αν χρειάζεται πότισμα από την υγρασία χώματος, το ισοζύγιο ET, τον καιρό και τα όρια ασφαλείας.",
+    modeHelp: "Το Manual χρησιμοποιεί πάντα τη σταθερή διάρκεια. Το Auto αποφασίζει αν χρειάζεται πότισμα από την υγρασία χώματος, τον τρέχοντα καιρό και τα όρια ασφαλείας.",
     days: "Ημέρες ποτίσματος", startTime: "Ώρα έναρξης", manualDuration: "Διάρκεια Manual",
     minutes: "λεπτά", valve: "Βάνα ή διακόπτης", moisture1: "Αισθητήρας υγρασίας χώματος 1",
     moisture2: "Αισθητήρας υγρασίας χώματος 2", soilTemperature1: "Αισθητήρας θερμοκρασίας χώματος 1", soilTemperature2: "Αισθητήρας θερμοκρασίας χώματος 2", weather: "Entity καιρού",
@@ -87,16 +87,16 @@ const WM_TRANSLATIONS = {
     adminOnly: "Μόνο οι διαχειριστές του Home Assistant μπορούν να αλλάζουν ρυθμίσεις ή να χειρίζονται τις βάνες.",
     monday: "Δε", tuesday: "Τρ", wednesday: "Τε", thursday: "Πε",
     friday: "Πα", saturday: "Σα", sunday: "Κυ",
-    weatherInfo: "Εκτός λειτουργίας ET, το Auto μπορεί να χρησιμοποιεί την τρέχουσα κατάσταση και τη θερμοκρασία του καιρού ως διόρθωση της διάρκειας.",
+    weatherInfo: "Το Auto μπορεί να χρησιμοποιεί την τρέχουσα κατάσταση και τη θερμοκρασία του καιρού ως διόρθωση της διάρκειας.",
     addTitle: "Δημιουργία συστήματος ποτίσματος", addHelp: "Δώσε ένα όνομα. Τα entities και οι ρυθμίσεις Auto επιλέγονται αμέσως μετά.",
     cancel: "Ακύρωση", create: "Δημιουργία", percent: "%", hours: "ώρες",
     sensorStale: "λεπτά", systemsCount: "συστήματα", updated: "Ενημερώθηκε",
     help: "Βοήθεια", close: "Κλείσιμο", day: "Ημέρα", week: "Εβδομάδα", month: "Μήνας",
     totalWateringTime: "Συνολικός χρόνος ποτίσματος", totalWaterVolume: "Συνολικός όγκος νερού",
-    averageTemperature: "Μέση θερμοκρασία αέρα", averageSoilTemperature1: "Μέση θερμοκρασία χώματος 1", averageSoilTemperature2: "Μέση θερμοκρασία χώματος 2", averageMoisture: "Μέση υγρασία χώματος",
+    averageTemperature: "Μέση θερμοκρασία αέρα", averageSoilTemperature1: "Μέση θερμοκρασία χώματος 1", averageSoilTemperature2: "Μέση θερμοκρασία χώματος 2", averageMoisture1: "Μέση υγρασία χώματος 1", averageMoisture2: "Μέση υγρασία χώματος 2",
     wateringRuns: "Ποτίσματα", successfulRuns: "Ολοκληρωμένα", skippedRuns: "Παραλείψεις",
     failedRuns: "Αποτυχίες", durationChart: "Χρόνος ποτίσματος ανά περίοδο", noStatistics: "Δεν υπάρχουν δεδομένα ποτίσματος για αυτή την περίοδο.",
-    statisticsNote: "Οι μέσες τιμές θερμοκρασίας αέρα, θερμοκρασίας χώματος και υγρασίας βασίζονται στις μετρήσεις που καταγράφηκαν όταν αξιολογήθηκε το πότισμα. Η θερμοκρασία χώματος είναι μόνο ενημερωτική και δεν αλλάζει ποτέ τη διάρκεια. Ο όγκος νερού είναι εκτίμηση από τον αισθητήρα ροής και εμφανίζεται μόνο για υποστηριζόμενες μονάδες ροής.",
+    statisticsNote: "Οι μέσες τιμές θερμοκρασίας αέρα, θερμοκρασίας χώματος και κάθε αισθητήρα υγρασίας βασίζονται στις μετρήσεις που καταγράφηκαν όταν αξιολογήθηκε το πότισμα. Η θερμοκρασία χώματος είναι μόνο ενημερωτική και δεν αλλάζει ποτέ τη διάρκεια. Ο όγκος νερού είναι εκτίμηση από τον αισθητήρα ροής και εμφανίζεται μόνο για υποστηριζόμενες μονάδες ροής.",
     volumePartial: "Ο όγκος βασίζεται μόνο στα ποτίσματα με διαθέσιμα δεδομένα ροής.",
     emergencyRuntime: "Μέγιστος χρόνος έκτακτης διακοπής", valveConfirmation: "Αναμονή επιβεβαίωσης κλεισίματος", leakFlow: "Μέγιστη ροή μετά το κλείσιμο",
     notifications: "Ειδοποιήσεις", notificationService: "Προορισμός ειδοποιήσεων", notifyFailures: "Αποτυχίες και συμβάντα ασφαλείας", notifyWarnings: "Προειδοποιήσεις και έλεγχος υγρασίας", notifySuccess: "Επιτυχημένα ποτίσματα", testNotification: "Δοκιμή", recipientName: "Όνομα παραλήπτη", addRecipient: "Προσθήκη παραλήπτη", removeRecipient: "Αφαίρεση παραλήπτη", noNotificationTargets: "Δεν έχουν οριστεί παραλήπτες ειδοποιήσεων.", notificationRecipientsHelp: "Κάθε παραλήπτης μπορεί να λαμβάνει διαφορετικό συνδυασμό συμβάντων. Οι κρίσιμες αποτυχίες εμφανίζονται πάντα και μέσα στο Home Assistant.", modernEntity: "Notify entities", legacyService: "Παλαιότερα notify services",
@@ -110,37 +110,27 @@ const WM_TRANSLATIONS = {
 Object.assign(WM_TRANSLATIONS.en, {
   preview: "Decision preview", refreshPreview: "Recalculate", willWater: "Will water", willNotWater: "Will not water",
   decisionGates: "Decision gates", decisionInputs: "Calculation inputs", expectedVolume: "Expected volume", durationBasis: "Duration basis",
-  plantAndPot: "Plant & pot profile", plantProfile: "Plant water demand", low: "Low", medium: "Medium", high: "High", custom: "Custom",
-  cropCoefficient: "Crop coefficient (Kc)", potShape: "Pot shape", round: "Round", rectangular: "Rectangular", potCount: "Number of pots",
-  potDiameter: "Pot diameter", potLength: "Pot length", potWidth: "Pot width", irrigationEfficiency: "Irrigation efficiency",
-  waterBalance: "ET water balance", waterBalanceEnabled: "Use daily ET water balance", waterBalanceCapacity: "Maximum retained deficit", waterBalanceTrigger: "Watering trigger deficit",
-  et0: "Daily reference ET (ET0)", cumulativeMeter: "Cumulative water meter", normalFlow: "Calibrated normal flow", flowTolerance: "Allowed flow deviation",
+  cumulativeMeter: "Cumulative water meter", normalFlow: "Calibrated normal flow", flowTolerance: "Allowed flow deviation",
   pauseUntil: "Pause until", pauseHelp: "Scheduled watering is paused before this date and resumes at 00:00 on the selected date. Run now remains available.",
   maintenanceMode: "Maintenance mode", maintenanceHelp: "Suspends schedules and normal Run now operations. Calibration, notification tests and the controlled valve test remain available.",
-  valveTest: "Test valve", valveTestSeconds: "Valve test duration", valveTestConfirm: "Maintenance test will open the valve briefly. Continue?",
-  year: "Year", all: "All", exactVolume: "Exact meter readings", estimatedVolume: "Flow estimates", dataQuality: "Data quality",
-  diagnosticWaterMeter: "Cumulative water meter", diagnosticEt0: "Reference ET (ET0)", currentDeficit: "Current water deficit", nextRun: "Next run",
-  etExplanation: "ET mode adds daily plant water use (ET0 × Kc) and replaces the accumulated deficit with irrigation. Soil moisture remains a safety veto.",
-  optionalSensors: "Moisture sensors are optional. With none selected, ET and safety limits decide. If a configured sensor becomes unavailable, the selected sensor-failure policy applies.",
-  source: "Source", cumulative: "Cumulative meter", estimated: "Estimated from flow", profilePreset: "Profile presets are starting values. Adjust Kc for the plant and local conditions.",
+  valveTest: "Test valve", valveTestSeconds: "Valve test duration", valveTestConfirm: "Maintenance test will open the valve briefly. Continue?", valveTestHelp: "Enable Maintenance mode in Schedule before testing the valve.",
+  year: "Year", all: "All", exactVolume: "Exact meter readings", estimatedVolume: "Flow estimates",
+  diagnosticWaterMeter: "Cumulative water meter", nextRun: "Next run",
+  optionalSensors: "Moisture sensors are optional. With none selected, Auto uses the base duration, current weather and safety limits. If a configured sensor becomes unavailable, the selected sensor-failure policy applies.",
+  source: "Source", cumulative: "Cumulative meter", estimated: "Estimated from flow",
   lastNotifications: "Last 10 notifications", recipient: "Recipient", event: "Event", deliveryStatus: "Delivery status", sent: "Sent", failed: "Failed", notificationFailure: "Failure", notificationWarning: "Warning", notificationSuccess: "Success", notificationTest: "Test", noNotificationHistory: "No notifications have been sent yet.",
 });
 Object.assign(WM_TRANSLATIONS.el, {
   preview: "Προεπισκόπηση απόφασης", refreshPreview: "Νέος υπολογισμός", willWater: "Θα ποτίσει", willNotWater: "Δεν θα ποτίσει",
   decisionGates: "Έλεγχοι απόφασης", decisionInputs: "Στοιχεία υπολογισμού", expectedVolume: "Αναμενόμενος όγκος", durationBasis: "Βάση διάρκειας",
-  plantAndPot: "Προφίλ φυτού και γλάστρας", plantProfile: "Ανάγκη φυτού σε νερό", low: "Χαμηλή", medium: "Μέτρια", high: "Υψηλή", custom: "Προσαρμοσμένη",
-  cropCoefficient: "Συντελεστής καλλιέργειας (Kc)", potShape: "Σχήμα γλάστρας", round: "Στρογγυλή", rectangular: "Ορθογώνια", potCount: "Πλήθος γλαστρών",
-  potDiameter: "Διάμετρος γλάστρας", potLength: "Μήκος γλάστρας", potWidth: "Πλάτος γλάστρας", irrigationEfficiency: "Απόδοση ποτίσματος",
-  waterBalance: "Ισοζύγιο νερού ET", waterBalanceEnabled: "Χρήση ημερήσιου ισοζυγίου ET", waterBalanceCapacity: "Μέγιστο έλλειμμα αποθήκευσης", waterBalanceTrigger: "Έλλειμμα ενεργοποίησης ποτίσματος",
-  et0: "Ημερήσια εξατμισοδιαπνοή αναφοράς (ET0)", cumulativeMeter: "Αθροιστικός μετρητής νερού", normalFlow: "Βαθμονομημένη φυσιολογική ροή", flowTolerance: "Επιτρεπτή απόκλιση ροής",
+  cumulativeMeter: "Αθροιστικός μετρητής νερού", normalFlow: "Βαθμονομημένη φυσιολογική ροή", flowTolerance: "Επιτρεπτή απόκλιση ροής",
   pauseUntil: "Παύση μέχρι", pauseHelp: "Το προγραμματισμένο πότισμα παραμένει σε παύση πριν από αυτή την ημερομηνία και επανέρχεται στις 00:00 της επιλεγμένης ημέρας. Το Πότισμα τώρα παραμένει διαθέσιμο.",
   maintenanceMode: "Λειτουργία συντήρησης", maintenanceHelp: "Αναστέλλει τα προγράμματα και το κανονικό Πότισμα τώρα. Παραμένουν διαθέσιμες οι βαθμονομήσεις, οι δοκιμές ειδοποιήσεων και η ελεγχόμενη δοκιμή βάνας.",
-  valveTest: "Δοκιμή βάνας", valveTestSeconds: "Διάρκεια δοκιμής βάνας", valveTestConfirm: "Η δοκιμή συντήρησης θα ανοίξει για λίγο τη βάνα. Συνέχεια;",
-  year: "Έτος", all: "Όλα", exactVolume: "Ακριβείς μετρήσεις", estimatedVolume: "Εκτιμήσεις ροής", dataQuality: "Ποιότητα δεδομένων",
-  diagnosticWaterMeter: "Αθροιστικός μετρητής νερού", diagnosticEt0: "Εξατμισοδιαπνοή αναφοράς (ET0)", currentDeficit: "Τρέχον έλλειμμα νερού", nextRun: "Επόμενο πότισμα",
-  etExplanation: "Το ET προσθέτει καθημερινά την κατανάλωση του φυτού (ET0 × Kc) και αναπληρώνει το συσσωρευμένο έλλειμμα με πότισμα. Η υγρασία χώματος παραμένει δικλείδα ασφαλείας.",
-  optionalSensors: "Οι αισθητήρες υγρασίας είναι προαιρετικοί. Χωρίς αισθητήρα αποφασίζουν το ET και τα όρια ασφαλείας. Αν ένας επιλεγμένος αισθητήρας πάψει να είναι διαθέσιμος, εφαρμόζεται η πολιτική αποτυχίας αισθητήρων.",
-  source: "Πηγή", cumulative: "Αθροιστικός μετρητής", estimated: "Εκτίμηση από ροή", profilePreset: "Τα προφίλ είναι αρχικές τιμές. Ρύθμισε το Kc ανάλογα με το φυτό και τις τοπικές συνθήκες.",
+  valveTest: "Δοκιμή βάνας", valveTestSeconds: "Διάρκεια δοκιμής βάνας", valveTestConfirm: "Η δοκιμή συντήρησης θα ανοίξει για λίγο τη βάνα. Συνέχεια;", valveTestHelp: "Ενεργοποίησε πρώτα τη Λειτουργία συντήρησης από το Πρόγραμμα.",
+  year: "Έτος", all: "Όλα", exactVolume: "Ακριβείς μετρήσεις", estimatedVolume: "Εκτιμήσεις ροής",
+  diagnosticWaterMeter: "Αθροιστικός μετρητής νερού", nextRun: "Επόμενο πότισμα",
+  optionalSensors: "Οι αισθητήρες υγρασίας είναι προαιρετικοί. Χωρίς αισθητήρα, το Auto χρησιμοποιεί τη βασική διάρκεια, τον τρέχοντα καιρό και τα όρια ασφαλείας. Αν ένας επιλεγμένος αισθητήρας πάψει να είναι διαθέσιμος, εφαρμόζεται η πολιτική αποτυχίας αισθητήρων.",
+  source: "Πηγή", cumulative: "Αθροιστικός μετρητής", estimated: "Εκτίμηση από ροή",
   lastNotifications: "10 τελευταίες ειδοποιήσεις", recipient: "Παραλήπτης", event: "Συμβάν", deliveryStatus: "Κατάσταση αποστολής", sent: "Στάλθηκε", failed: "Απέτυχε", notificationFailure: "Αποτυχία", notificationWarning: "Προειδοποίηση", notificationSuccess: "Επιτυχία", notificationTest: "Δοκιμή", noNotificationHistory: "Δεν έχουν σταλεί ακόμη ειδοποιήσεις.",
 });
 
@@ -163,8 +153,8 @@ const WM_HELP_LABELS = {
 
 const WM_HELP = {
   mode: {
-    el: "Manual: το προγραμματισμένο και το άμεσο πότισμα χρησιμοποιούν τη σταθερή Διάρκεια Manual. Auto: πριν ανοίξει η βάνα, το σύστημα ελέγχει την υγρασία χώματος, το ισοζύγιο ET, τον καιρό και τα όρια ασφαλείας. Μπορεί να αλλάξει τη διάρκεια ή να παραλείψει εντελώς το πότισμα. Το κουμπί «Πότισμα τώρα» εκτελεί πάντα τη χειροκίνητη διάρκεια.",
-    en: "Manual: scheduled and immediate watering use the fixed Manual duration. Auto evaluates soil moisture, ET water balance, current weather and safety limits before opening the valve. It may adjust or completely skip watering. Run now always uses the manual duration.",
+    el: "Manual: το προγραμματισμένο και το άμεσο πότισμα χρησιμοποιούν τη σταθερή Διάρκεια Manual. Auto: πριν ανοίξει η βάνα, το σύστημα ελέγχει την υγρασία χώματος, τον τρέχοντα καιρό και τα όρια ασφαλείας. Μπορεί να αλλάξει τη διάρκεια ή να παραλείψει εντελώς το πότισμα. Το κουμπί «Πότισμα τώρα» εκτελεί πάντα τη χειροκίνητη διάρκεια.",
+    en: "Manual: scheduled and immediate watering use the fixed Manual duration. Auto evaluates soil moisture, current weather and safety limits before opening the valve. It may adjust or completely skip watering. Run now always uses the manual duration.",
   },
   base_duration: {
     el: "Ο βασικός χρόνος που συνήθως χρειάζεται το συγκεκριμένο σύστημα για να μετατρέψει το χώμα από στεγνό σε σωστά υγρό. Είναι η αρχική διάρκεια του Auto και στη συνέχεια διορθώνεται από τις μετρήσεις και τον καιρό.",
@@ -293,26 +283,14 @@ const WM_HELP = {
 };
 
 Object.assign(WM_HELP_LABELS, {
-  plant_profile:"plantProfile", crop_coefficient:"cropCoefficient", pot_shape:"potShape", pot_count:"potCount",
-  pot_diameter_cm:"potDiameter", pot_length_cm:"potLength", pot_width_cm:"potWidth",
-  irrigation_efficiency_percent:"irrigationEfficiency", water_balance_enabled:"waterBalanceEnabled",
-  water_balance_capacity_mm:"waterBalanceCapacity", water_balance_trigger_mm:"waterBalanceTrigger",
-  et0_sensor:"et0", water_meter_sensor:"cumulativeMeter", normal_flow_rate:"normalFlow",
+  water_meter_sensor:"cumulativeMeter", normal_flow_rate:"normalFlow",
   flow_tolerance_percent:"flowTolerance", paused_until:"pauseUntil", maintenance_mode:"maintenanceMode",
   valve_test_seconds:"valveTestSeconds",
   post_check_enabled:"postCheckEnabled",
 });
 Object.assign(WM_HELP, {
-  crop_coefficient:{el:"Ο Kc μετατρέπει την ημερήσια ET0 σε εκτιμώμενη κατανάλωση του φυτού: ETc = ET0 × Kc. Είναι παράμετρος βαθμονόμησης και όχι αυτόματη αναγνώριση είδους.",en:"Kc converts daily ET0 to estimated plant use: ETc = ET0 × Kc. It is a calibration parameter, not automatic species identification."},
-  plant_profile:{el:"Αρχική κατηγορία ζήτησης νερού. Χαμηλή=Kc 0,5, μέτρια=0,8, υψηλή=1,1. Μετά μπορείς να διορθώσεις το Kc για το συγκεκριμένο φυτό.",en:"Starting water-demand category. Low=Kc 0.5, medium=0.8, high=1.1. You can then tune Kc for the actual plant."},
-  pot_shape:{el:"Οι διαστάσεις και το πλήθος υπολογίζουν τη συνολική επιφάνεια χώματος. Επειδή 1 mm πάνω σε 1 m² ισούται με 1 λίτρο, η επιφάνεια μετατρέπει το έλλειμμα ET σε όγκο νερού.",en:"Dimensions and count calculate total soil surface area. Since 1 mm over 1 m² equals 1 litre, area converts ET deficit to water volume."},
-  irrigation_efficiency_percent:{el:"Το ποσοστό του νερού που εκτιμάται ότι φτάνει στη ριζόσφαιρα. Μικρότερη απόδοση απαιτεί περισσότερο εφαρμοζόμενο νερό. Για στάγδην ξεκίνα περίπου από 90% και βαθμονόμησε.",en:"Estimated percentage of applied water reaching the root zone. Lower efficiency requires more delivered water. For drip irrigation, start near 90% and calibrate."},
-  water_balance_enabled:{el:"Ενεργοποιεί ημερήσιο ισοζύγιο: προσθήκη της ημερήσιας ανάγκης ETc και αφαίρεση του πραγματικού ή εκτιμώμενου ποτίσματος.",en:"Enables a daily balance: add the daily ETc demand, then subtract actual or estimated irrigation."},
-  water_balance_capacity_mm:{el:"Ανώτατο έλλειμμα που μπορεί να συσσωρευτεί. Περιορίζει την ανάκτηση μετά από μεγάλα κενά και αποφεύγει υπερβολικό πότισμα.",en:"Maximum deficit allowed to accumulate. It limits catch-up after long gaps and prevents excessive watering."},
-  water_balance_trigger_mm:{el:"Το Auto δεν ποτίζει από ET πριν το συσσωρευμένο έλλειμμα φτάσει αυτή την τιμή.",en:"Auto does not irrigate from ET until accumulated deficit reaches this value."},
-  et0_sensor:{el:"Sensor με ημερήσια ET0 σε mm ή mm/day. Η εφαρμογή δεν κατασκευάζει ET0 από μία απλή θερμοκρασία, γιατί αυτό θα έδινε ψευδή ακρίβεια.",en:"Sensor providing daily ET0 in mm or mm/day. The app does not fabricate ET0 from temperature alone because that would imply false precision."},
   water_meter_sensor:{el:"Αθροιστικός μετρητής όγκου σε L, m³, mL, gal ή ft³. Η διαφορά αρχής–τέλους δίνει τον ακριβέστερο όγκο και έχει προτεραιότητα από την εκτίμηση ροής.",en:"Cumulative volume meter in L, m³, mL, gal or ft³. The start-to-end difference provides the most accurate volume and takes priority over flow estimates."},
-  normal_flow_rate:{el:"Φυσιολογική ροή σε L/min που προκύπτει από τη βαθμονόμηση. Χρησιμοποιείται για διάρκεια ET, εκτίμηση όγκου και ανίχνευση απόκλισης.",en:"Normal flow in L/min established by calibration. It is used for ET duration, volume estimates and deviation detection."},
+  normal_flow_rate:{el:"Φυσιολογική ροή σε L/min που προκύπτει από τη βαθμονόμηση. Χρησιμοποιείται για εκτίμηση όγκου και ανίχνευση απόκλισης.",en:"Normal flow in L/min established by calibration. It is used for volume estimates and deviation detection."},
   flow_tolerance_percent:{el:"Επιτρεπτή ποσοστιαία απόκλιση γύρω από τη φυσιολογική ροή. Εκτός ορίων η εκτέλεση σταματά ως πιθανό βούλωμα, κλειστή παροχή ή διαρροή.",en:"Allowed percentage deviation around normal flow. Outside this band the run stops as a possible blockage, closed supply or leak."},
   paused_until:{el:WM_TRANSLATIONS.el.pauseHelp,en:WM_TRANSLATIONS.en.pauseHelp},
   maintenance_mode:{el:WM_TRANSLATIONS.el.maintenanceHelp,en:WM_TRANSLATIONS.en.maintenanceHelp},
@@ -447,13 +425,11 @@ class WateringManagerPanel extends HTMLElement {
     const soilTemperature1 = this.entityValueWithUnit(system.soil_temperature_sensor);
     const soilTemperature2 = this.entityValueWithUnit(system.soil_temperature_sensor_2);
     const weather = this.weatherSummary(system.weather_entity);
-    const balance = this.state.water_balances?.[system.id];
     return `<div class="grid stats">
       ${this.stat("mdi:water-percent", this.t("sensorValues"), moisture.map((v) => v == null ? "—" : `${v}%`).join(" / "))}
       ${this.stat("mdi:thermometer-lines", this.t("soilTemperature1"), soilTemperature1)}
       ${this.stat("mdi:thermometer-lines", this.t("soilTemperature2"), soilTemperature2)}
       ${this.stat(weather.icon, this.t("weather"), weather.text)}
-      ${this.stat("mdi:water-sync", this.t("currentDeficit"), balance?.deficit_mm == null ? "—" : `${balance.deficit_mm} mm`)}
       ${this.stat("mdi:clock-outline", this.t("lastRun"), system.last_run_at ? this.formatDate(system.last_run_at) : "—")}
       ${this.stat("mdi:timer-outline", this.t("lastDuration"), system.last_duration == null ? "—" : `${system.last_duration} ${this.t("minutes")}`)}
       ${this.stat(running ? "mdi:water-pump" : "mdi:check-circle-outline", this.t("currentStatus"), running ? this.t("running") : this.t("idle"))}
@@ -474,30 +450,16 @@ class WateringManagerPanel extends HTMLElement {
       ${this.input("paused_until", this.t("pauseUntil"), system.paused_until || "", "date")}
     </div>
     <label class="toggle"><input name="enabled" type="checkbox" ${system.enabled ? "checked" : ""}><span></span>${this.t("enabled")}</label>
+    <div class="field">${this.fieldLabel("maintenance_mode", this.t("maintenanceMode"))}<label class="toggle"><input name="maintenance_mode" type="checkbox" ${system.maintenance_mode ? "checked" : ""}><span></span>${this.t("enabled")}</label></div>
     <div class="field"><label>${this.t("days")}</label><div class="days">${days.map((day, index) => `<label><input type="checkbox" name="days" value="${index}" ${system.days.includes(index) ? "checked" : ""}><span>${this.t(day)}</span></label>`).join("")}</div></div>
     <div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("modeHelp")}</div>
     <div class="info-line"><ha-icon icon="mdi:pause-circle-outline"></ha-icon>${this.t("pauseHelp")}</div>
+    <div class="info-line"><ha-icon icon="mdi:tools"></ha-icon>${this.t("maintenanceHelp")}</div>
     ${this.textarea("notes", this.t("notes"), system.notes)}</section></form>`;
   }
 
   automatic(system) {
     return `<form id="settings-form"><div class="grid">
-      <section class="card form-card"><h3>${this.t("plantAndPot")}</h3><div class="fields two">
-        ${this.selectField("plant_profile", this.t("plantProfile"), system.plant_profile, [["low",this.t("low")],["medium",this.t("medium")],["high",this.t("high")],["custom",this.t("custom")]])}
-        ${this.number("crop_coefficient", this.t("cropCoefficient"), system.crop_coefficient, 0.1, 2, "Kc")}
-        ${this.selectField("pot_shape", this.t("potShape"), system.pot_shape, [["round",this.t("round")],["rectangular",this.t("rectangular")]])}
-        ${this.number("pot_count", this.t("potCount"), system.pot_count, 1, 1000, "")}
-        ${this.number("pot_diameter_cm", this.t("potDiameter"), system.pot_diameter_cm, 1, 1000, "cm")}
-        ${this.number("pot_length_cm", this.t("potLength"), system.pot_length_cm, 1, 1000, "cm")}
-        ${this.number("pot_width_cm", this.t("potWidth"), system.pot_width_cm, 1, 1000, "cm")}
-        ${this.number("irrigation_efficiency_percent", this.t("irrigationEfficiency"), system.irrigation_efficiency_percent, 1, 100, "%")}
-      </div><div class="info-line"><ha-icon icon="mdi:sprout-outline"></ha-icon>${this.t("profilePreset")}</div></section>
-      <section class="card form-card"><h3>${this.t("waterBalance")}</h3>
-        <div class="field">${this.fieldLabel("water_balance_enabled", this.t("waterBalanceEnabled"))}<label class="toggle"><input name="water_balance_enabled" type="checkbox" ${system.water_balance_enabled ? "checked" : ""}><span></span>${this.t("enabled")}</label></div>
-        <div class="fields two">
-          ${this.number("water_balance_capacity_mm", this.t("waterBalanceCapacity"), system.water_balance_capacity_mm, 0.1, 500, "mm")}
-          ${this.number("water_balance_trigger_mm", this.t("waterBalanceTrigger"), system.water_balance_trigger_mm, 0.1, 500, "mm")}
-        </div><div class="info-line"><ha-icon icon="mdi:water-sync"></ha-icon>${this.t("etExplanation")}</div></section>
       <section class="card form-card"><h3>${this.t("automatic")}</h3><div class="fields two">
         ${this.number("base_duration", this.t("baseDuration"), system.base_duration, 1, 240, this.t("minutes"))}
         ${this.number("conflict_duration", this.t("conflictDuration"), system.conflict_duration, 1, 60, this.t("minutes"))}
@@ -537,7 +499,6 @@ class WateringManagerPanel extends HTMLElement {
       ${this.entityField("soil_temperature_sensor_2", this.t("soilTemperature2"), system.soil_temperature_sensor_2, ["sensor"])}
       ${this.entityField("flow_sensor", this.t("flow"), system.flow_sensor, ["sensor"])}
       ${this.entityField("water_meter_sensor", this.t("cumulativeMeter"), system.water_meter_sensor, ["sensor"])}
-      ${this.entityField("et0_sensor", this.t("et0"), system.et0_sensor, ["sensor"])}
       ${this.number("normal_flow_rate", this.t("normalFlow"), system.normal_flow_rate, 0, 10000, "L/min")}
       ${this.number("flow_tolerance_percent", this.t("flowTolerance"), system.flow_tolerance_percent, 1, 100, "%")}
       ${this.number("flow_minimum", this.t("flowMinimum"), system.flow_minimum, 0, 10000, "")}
@@ -564,7 +525,6 @@ class WateringManagerPanel extends HTMLElement {
     const item = this.previewData;
     if (!item) return `<div class="preview-view"><section class="card empty compact"><ha-icon icon="mdi:file-search-outline"></ha-icon><button class="primary" id="refresh-preview">${this.t("refreshPreview")}</button></section></div>`;
     const inputs = item.inputs || {};
-    const balance = inputs.water_balance;
     const moisture = (inputs.moisture || []).map((reading, index) => `<div class="decision-row"><span>${this.t(index ? "moisture2" : "moisture1")}</span><strong>${reading.valid ? `${reading.value}%` : this.reason(reading.reason)}</strong></div>`).join("");
     const gates = (inputs.gates || []).map((gate) => `<div class="health-row ${gate.passed ? "ok" : "error"}"><ha-icon icon="${gate.passed ? "mdi:check-circle" : "mdi:close-circle"}"></ha-icon><div><strong>${this.reason(gate.key)}</strong>${gate.detail ? `<small>${this.esc(gate.detail)}</small>` : ""}</div></div>`).join("");
     return `<div class="preview-view">
@@ -576,14 +536,6 @@ class WateringManagerPanel extends HTMLElement {
         <div class="decision-row"><span>${this.t("weather")}</span><strong>${this.esc(inputs.weather?.condition || "—")} · ${inputs.weather?.temperature ?? "—"}° · ×${inputs.weather?.factor ?? "—"}</strong></div>
         <div class="decision-row"><span>${this.t("durationBasis")}</span><strong>${this.esc(inputs.duration_basis || "—")}</strong></div>
       </div></section>
-      ${balance ? `<section class="card"><h3>${this.t("waterBalance")}</h3><div class="decision-list">
-        <div class="decision-row"><span>ET0</span><strong>${balance.et0?.value ?? "—"} ${this.esc(balance.et0?.unit || "")}</strong></div>
-        <div class="decision-row"><span>Kc / ETc</span><strong>${balance.crop_coefficient} / ${balance.last_etc_mm ?? "—"} mm</strong></div>
-        <div class="decision-row"><span>${this.t("currentDeficit")}</span><strong>${balance.deficit_mm} mm</strong></div>
-        <div class="decision-row"><span>${this.t("potShape")}</span><strong>${balance.pot_area_m2} m²</strong></div>
-        <div class="decision-row"><span>${this.t("normalFlow")}</span><strong>${balance.flow_lpm ?? "—"} L/min</strong></div>
-        <div class="decision-row"><span>${this.t("dataQuality")}</span><strong>${this.esc(balance.quality)}</strong></div>
-      </div></section>` : ""}
     </div>`;
   }
 
@@ -595,7 +547,7 @@ class WateringManagerPanel extends HTMLElement {
   diagnostics(system) {
     const diagnostic = this.state.diagnostics?.[system.id] || {status:"warning",checks:[],pending_post_checks:0};
     const calibration = this.state.calibrations?.[system.id];
-    const labels = {valve:"diagnosticValve",moisture_1:"diagnosticMoisture1",moisture_2:"diagnosticMoisture2",soil_temperature_1:"diagnosticSoilTemperature1",soil_temperature_2:"diagnosticSoilTemperature2",weather:"diagnosticWeather",flow:"diagnosticFlow",water_meter:"diagnosticWaterMeter",et0:"diagnosticEt0",notifications:"diagnosticNotifications"};
+    const labels = {valve:"diagnosticValve",moisture_1:"diagnosticMoisture1",moisture_2:"diagnosticMoisture2",soil_temperature_1:"diagnosticSoilTemperature1",soil_temperature_2:"diagnosticSoilTemperature2",weather:"diagnosticWeather",flow:"diagnosticFlow",water_meter:"diagnosticWaterMeter",notifications:"diagnosticNotifications"};
     const statusIcon = {healthy:"mdi:check-decagram",warning:"mdi:alert-outline",critical:"mdi:alert-octagon"}[diagnostic.status] || "mdi:help-circle-outline";
     let result = `<p class="muted">${this.t("noCalibration")}</p>`;
     if (calibration?.status === "running") {
@@ -609,10 +561,9 @@ class WateringManagerPanel extends HTMLElement {
     return `<div class="diagnostics-view">
       <section class="card health-summary ${diagnostic.status}"><ha-icon icon="${statusIcon}"></ha-icon><div><small>${this.t("health")}</small><strong>${this.t(diagnostic.status)}</strong></div><span>${this.t("pendingChecks")}: ${diagnostic.pending_post_checks || 0}</span></section>
       <section class="card"><h3>${this.t("health")}</h3><div class="health-list">${diagnostic.checks.map((check) => `<div class="health-row ${check.status}"><ha-icon icon="${check.status === "ok" ? "mdi:check-circle" : check.status === "error" ? "mdi:alert-circle" : "mdi:minus-circle-outline"}"></ha-icon><div><strong>${this.t(labels[check.key] || check.key)}</strong><small>${this.diagnosticDetail(check.detail)}</small></div></div>`).join("")}</div></section>
-      <form id="settings-form"><section class="card form-card"><h3>${this.t("maintenanceMode")}</h3>
-        <div class="field">${this.fieldLabel("maintenance_mode", this.t("maintenanceMode"))}<label class="toggle"><input name="maintenance_mode" type="checkbox" ${system.maintenance_mode ? "checked" : ""}><span></span>${this.t("enabled")}</label></div>
+      <form id="settings-form"><section class="card form-card"><h3>${this.t("valveTest")}</h3>
         <div class="fields two">${this.number("valve_test_seconds", this.t("valveTestSeconds"), system.valve_test_seconds, 2, 60, "sec")}</div>
-        <div class="info-line"><ha-icon icon="mdi:tools"></ha-icon>${this.t("maintenanceHelp")}</div>
+        <div class="info-line"><ha-icon icon="mdi:information-outline"></ha-icon>${this.t("valveTestHelp")}</div>
         ${this.isAdmin ? `<button type="button" id="test-valve"><ha-icon icon="mdi:pipe-valve"></ha-icon>${this.t("valveTest")}</button>` : ""}
       </section><section class="card form-card"><h3>${this.t("calibration")}</h3><div class="fields two">
         ${this.number("flow_calibration_seconds", this.t("flowCalibrationSeconds"), system.flow_calibration_seconds, 10, 120, "sec")}
@@ -648,7 +599,8 @@ class WateringManagerPanel extends HTMLElement {
     const averageTemperature = weighted("air_temperature_sum","air_temperature_count");
     const averageSoilTemperature1 = weighted("soil_temperature_1_sum","soil_temperature_1_count");
     const averageSoilTemperature2 = weighted("soil_temperature_2_sum","soil_temperature_2_count");
-    const averageMoisture = weighted("moisture_sum","moisture_count");
+    const averageMoisture1 = weighted("moisture_1_sum","moisture_1_count");
+    const averageMoisture2 = weighted("moisture_2_sum","moisture_2_count");
     const soilTemperatureUnit1 = this.hass.states[system.soil_temperature_sensor]?.attributes?.unit_of_measurement || "°";
     const soilTemperatureUnit2 = this.hass.states[system.soil_temperature_sensor_2]?.attributes?.unit_of_measurement || "°";
     const completed = sum("completed"), skipped = sum("skipped"), failed = sum("failed");
@@ -664,7 +616,8 @@ class WateringManagerPanel extends HTMLElement {
         ${this.stat("mdi:thermometer", this.t("averageTemperature"), averageTemperature == null ? "—" : `${averageTemperature.toFixed(1)}°`)}
         ${this.stat("mdi:thermometer-lines", this.t("averageSoilTemperature1"), averageSoilTemperature1 == null ? "—" : `${averageSoilTemperature1.toFixed(1)} ${soilTemperatureUnit1}`)}
         ${this.stat("mdi:thermometer-lines", this.t("averageSoilTemperature2"), averageSoilTemperature2 == null ? "—" : `${averageSoilTemperature2.toFixed(1)} ${soilTemperatureUnit2}`)}
-        ${this.stat("mdi:water-percent", this.t("averageMoisture"), averageMoisture == null ? "—" : `${averageMoisture.toFixed(1)}%`)}
+        ${this.stat("mdi:water-percent", this.t("averageMoisture1"), averageMoisture1 == null ? "—" : `${averageMoisture1.toFixed(1)}%`)}
+        ${this.stat("mdi:water-percent", this.t("averageMoisture2"), averageMoisture2 == null ? "—" : `${averageMoisture2.toFixed(1)}%`)}
         ${this.stat("mdi:sprinkler-variant", this.t("wateringRuns"), String(sum("runs")))}
         ${this.stat("mdi:check-circle-outline", this.t("successfulRuns"), String(completed))}
         ${this.stat("mdi:skip-next-outline", this.t("skippedRuns"), String(skipped))}
@@ -812,9 +765,6 @@ class WateringManagerPanel extends HTMLElement {
       system_disabled:{el:"Το σύστημα είναι ανενεργό",en:"System disabled"},
       maintenance_mode:{el:"Λειτουργία συντήρησης ενεργή",en:"Maintenance mode is active"},
       paused:{el:"Παύση έως την επιλεγμένη ημερομηνία",en:"Paused until selected date"},
-      et_water_balance:{el:"Απόφαση από ισοζύγιο ET",en:"ET water-balance decision"},
-      et0_unavailable:{el:"Η ET0 δεν είναι διαθέσιμη ή έχει λάθος μονάδα",en:"ET0 is unavailable or has an invalid unit"},
-      water_balance_below_trigger:{el:"Το έλλειμμα είναι κάτω από το όριο",en:"Water deficit is below the trigger"},
       no_moisture_sensors:{el:"Χωρίς αισθητήρες υγρασίας",en:"No moisture sensors configured"},
       valve_entity_required:{el:"Δεν έχει οριστεί βάνα",en:"Valve entity is required"},
       valve_test_passed:{el:"Η δοκιμή βάνας ολοκληρώθηκε",en:"Valve test passed"},
@@ -856,7 +806,6 @@ class WateringManagerPanel extends HTMLElement {
     this.shadowRoot.getElementById("apply-calibration")?.addEventListener("click", () => this.applyCalibration());
     this.shadowRoot.getElementById("refresh-preview")?.addEventListener("click", () => this.loadPreview());
     this.shadowRoot.getElementById("test-valve")?.addEventListener("click", () => this.testValve());
-    this.shadowRoot.getElementById("plant_profile")?.addEventListener("change", (event) => { const kc={low:0.5,medium:0.8,high:1.1}[event.target.value]; if (kc) this.shadowRoot.getElementById("crop_coefficient").value=kc; });
     this.shadowRoot.querySelectorAll("[data-stats-range]").forEach((button) => button.addEventListener("click", () => { this.statsRange = button.dataset.statsRange; this.render(); }));
     this.shadowRoot.querySelectorAll(".help-button").forEach((button) => button.addEventListener("click", () => this.showHelpDialog(button.dataset.help)));
   }
@@ -881,13 +830,12 @@ class WateringManagerPanel extends HTMLElement {
     const data = Object.fromEntries(new FormData(form).entries());
     if (this.tab === "schedule") {
       data.enabled = form.elements.enabled.checked;
+      data.maintenance_mode = form.elements.maintenance_mode.checked;
       data.days = [...form.querySelectorAll('input[name="days"]:checked')].map((input) => Number(input.value));
     }
     if (this.tab === "automatic") {
       data.post_check_enabled = form.elements.post_check_enabled.checked;
-      data.water_balance_enabled = form.elements.water_balance_enabled.checked;
     }
-    if (this.tab === "diagnostics") data.maintenance_mode = form.elements.maintenance_mode.checked;
     if (this.tab === "notifications") {
       data.notification_targets = [...form.querySelectorAll(".recipient-row")].map((row) => ({
         name: row.querySelector("[data-recipient-name]").value.trim(),
@@ -897,7 +845,7 @@ class WateringManagerPanel extends HTMLElement {
         success: row.querySelector('[data-recipient-event="success"]').checked,
       }));
     }
-    const numeric = ["manual_duration","base_duration","minimum_duration","maximum_duration","conflict_duration","dry_threshold","wet_threshold","sensor_max_age_minutes","weather_sensitivity","minimum_interval_hours","soak_cycles","soak_pause_minutes","flow_minimum","flow_maximum","flow_grace_seconds","emergency_max_runtime","valve_confirmation_seconds","leak_flow_threshold","post_check_delay_minutes","post_check_min_increase","flow_calibration_seconds","duration_calibration_minutes","duration_calibration_wait_minutes","crop_coefficient","pot_count","pot_diameter_cm","pot_length_cm","pot_width_cm","irrigation_efficiency_percent","water_balance_capacity_mm","water_balance_trigger_mm","normal_flow_rate","flow_tolerance_percent","valve_test_seconds"];
+    const numeric = ["manual_duration","base_duration","minimum_duration","maximum_duration","conflict_duration","dry_threshold","wet_threshold","sensor_max_age_minutes","weather_sensitivity","minimum_interval_hours","soak_cycles","soak_pause_minutes","flow_minimum","flow_maximum","flow_grace_seconds","emergency_max_runtime","valve_confirmation_seconds","leak_flow_threshold","post_check_delay_minutes","post_check_min_increase","flow_calibration_seconds","duration_calibration_minutes","duration_calibration_wait_minutes","normal_flow_rate","flow_tolerance_percent","valve_test_seconds"];
     numeric.forEach((key) => { if (key in data) data[key] = Number(data[key]); });
     return data;
   }

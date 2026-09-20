@@ -15,7 +15,6 @@
     "sensor": {
       "status": {"name": "Κατάσταση", "state": {"idle": "Σε αναμονή", "running": "Ποτίζει", "maintenance": "Συντήρηση", "disabled": "Ανενεργό"}},
       "next_run": {"name": "Επόμενο πότισμα"},
-      "water_deficit": {"name": "Έλλειμμα νερού"},
       "last_water_volume": {"name": "Όγκος τελευταίου ποτίσματος"},
       "total_water": {"name": "Συνολικό νερό"},
       "total_duration": {"name": "Συνολικός χρόνος ποτίσματος"},

@@ -15,7 +15,6 @@
     "sensor": {
       "status": {"name": "Status", "state": {"idle": "Idle", "running": "Running", "maintenance": "Maintenance", "disabled": "Disabled"}},
       "next_run": {"name": "Next run"},
-      "water_deficit": {"name": "Water deficit"},
       "last_water_volume": {"name": "Last water volume"},
       "total_water": {"name": "Total water"},
       "total_duration": {"name": "Total watering time"},

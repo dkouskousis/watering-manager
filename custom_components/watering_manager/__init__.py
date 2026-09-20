@@ -11,6 +11,7 @@ from homeassistant.components.frontend import (
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 
 from .const import (
     DOMAIN,
@@ -28,6 +29,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Watering Manager."""
     manager = WateringManager(hass)
     await manager.async_setup()
+
+    registry = er.async_get(hass)
+    for system_id in manager.systems:
+        entity_id = registry.async_get_entity_id(
+            "sensor", DOMAIN, f"{system_id}_water_deficit"
+        )
+        if entity_id:
+            registry.async_remove(entity_id)
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = manager

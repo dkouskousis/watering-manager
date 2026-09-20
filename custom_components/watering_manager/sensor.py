@@ -90,15 +90,6 @@ def _definitions(manager: WateringManager, system_id: str) -> list[SensorEntity]
         WateringSensor(
             manager,
             system_id,
-            "water_deficit",
-            "Water deficit",
-            lambda m, sid: m.water_balances.get(sid, {}).get("deficit_mm"),
-            unit="mm",
-            state_class=SensorStateClass.MEASUREMENT,
-        ),
-        WateringSensor(
-            manager,
-            system_id,
             "last_water_volume",
             "Last water volume",
             _last_volume,
