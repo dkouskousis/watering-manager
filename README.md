@@ -4,11 +4,12 @@ Watering Manager is a Home Assistant custom integration for managing multiple ir
 
 > Status: early development release. Test with supervision before relying on it unattended.
 
-Current development version: **0.3.5**
+Current development version: **0.3.6**
 
 ## Current features
 
 - Dedicated **Watering / Πότισμα** page in the Home Assistant sidebar.
+- Modern responsive overview with grouped soil sensors, environment and latest-run information.
 - Create, edit and delete multiple watering systems without YAML.
 - Greek and English interface, automatically selected from Home Assistant with a manual override.
 - Entity selectors for valves, valve battery level, soil moisture sensors, soil temperature, weather, flow and water meters.
