@@ -4,11 +4,12 @@ Watering Manager is a Home Assistant custom integration for managing multiple ir
 
 > Status: early development release. Test with supervision before relying on it unattended.
 
-Current development version: **0.3.6**
+Current development version: **0.4.0**
 
 ## Current features
 
 - Dedicated **Watering / Πότισμα** page in the Home Assistant sidebar.
+- Native `custom:watering-manager-card` for one dashboard card per watering system, with a graphical system selector and no entity-ID configuration.
 - Modern responsive overview with grouped soil sensors, environment and latest-run information.
 - Create, edit and delete multiple watering systems without YAML.
 - Greek and English interface, automatically selected from Home Assistant with a manual override.
@@ -46,8 +47,9 @@ Current development version: **0.3.6**
 4. Open **Settings → Devices & services → Add integration**.
 5. Search for **Watering Manager** and add it.
 6. Open **Watering / Πότισμα** from the sidebar.
+7. To add a dashboard card, edit a dashboard, choose **Add card → Watering Manager**, and select the watering system from the graphical editor.
 
-No dashboard card or YAML package is required.
+The card module is registered automatically by the integration. No separate HACS dashboard repository or manual resource is required.
 
 ## Automatic watering logic
 
