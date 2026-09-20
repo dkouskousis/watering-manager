@@ -1,4 +1,4 @@
-const WMC_VERSION = "0.4.2";
+const WMC_VERSION = "0.4.3";
 
 const WMC_TEXT = {
   en: {
@@ -365,10 +365,12 @@ class WateringManagerCardEditor extends HTMLElement {
 
   set hass(value) {
     const first = !this._hass;
+    const language = (value.language || "en").startsWith("el") ? "el" : "en";
+    const languageChanged = Boolean(this._language && this._language !== language);
     this._hass = value;
-    this._language = (value.language || "en").startsWith("el") ? "el" : "en";
+    this._language = language;
     if (first) this.loadSystems();
-    else this.render();
+    else if (languageChanged) this.render();
   }
 
   t(key) { return WMC_TEXT[this._language]?.[key] || WMC_TEXT.en[key] || key; }
