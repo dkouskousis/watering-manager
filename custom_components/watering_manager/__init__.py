@@ -11,6 +11,7 @@ from homeassistant.components.frontend import (
     remove_extra_js_url,
 )
 from homeassistant.components.http import StaticPathConfig
+from homeassistant.components.lovelace.const import LOVELACE_DATA, MODE_STORAGE
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
@@ -27,6 +28,35 @@ from .const import (
 )
 from .manager import WateringManager
 from .websocket import async_register_websocket_api
+
+
+async def _async_register_lovelace_resource(hass: HomeAssistant) -> None:
+    """Register the dashboard card as a Lovelace module resource."""
+    lovelace = hass.data[LOVELACE_DATA]
+    if lovelace.resource_mode != MODE_STORAGE:
+        return
+
+    resources = lovelace.resources
+    await resources.async_get_info()
+    existing = next(
+        (
+            item
+            for item in resources.async_items()
+            if item.get("url", "").startswith(CARD_STATIC_URL)
+        ),
+        None,
+    )
+    if existing is None:
+        await resources.async_create_item(
+            {"res_type": "module", "url": CARD_MODULE_URL}
+        )
+        return
+
+    if existing.get("url") != CARD_MODULE_URL or existing.get("type") != "module":
+        await resources.async_update_item(
+            existing["id"],
+            {"res_type": "module", "url": CARD_MODULE_URL},
+        )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -63,6 +93,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     add_extra_js_url(hass, CARD_MODULE_URL)
+    await _async_register_lovelace_resource(hass)
 
     async_register_built_in_panel(
         hass,
