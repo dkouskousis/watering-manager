@@ -5,10 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from homeassistant.components.frontend import (
-    add_extra_js_url,
     async_register_built_in_panel,
     async_remove_panel,
-    remove_extra_js_url,
 )
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.components.lovelace.const import LOVELACE_DATA, MODE_STORAGE
@@ -92,7 +90,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ]
     )
 
-    add_extra_js_url(hass, CARD_MODULE_URL)
     await _async_register_lovelace_resource(hass)
 
     async_register_built_in_panel(
@@ -123,6 +120,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         return False
     manager: WateringManager = hass.data[DOMAIN].pop(entry.entry_id)
     await manager.async_unload()
-    remove_extra_js_url(hass, CARD_MODULE_URL)
     async_remove_panel(hass, PANEL_URL)
     return True

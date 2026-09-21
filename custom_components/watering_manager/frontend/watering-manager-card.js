@@ -1,4 +1,4 @@
-const WMC_VERSION = "0.4.6";
+const WMC_VERSION = "0.4.7";
 
 const WMC_TEXT = {
   en: {
