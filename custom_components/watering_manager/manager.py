@@ -13,7 +13,10 @@ from uuid import uuid4
 from homeassistant.components import persistent_notification
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import (
+    async_track_state_change_event,
+    async_track_time_interval,
+)
 from homeassistant.helpers.storage import Store
 from homeassistant.util import dt as dt_util
 
@@ -22,6 +25,7 @@ from .const import (
     DEFAULT_SYSTEM,
     EVENT_UPDATED,
     LOG_LIMIT,
+    METER_UPDATE_TIMEOUT_SECONDS,
     SCHEDULER_INTERVAL_SECONDS,
     STORAGE_KEY,
     STORAGE_VERSION,
@@ -39,6 +43,7 @@ class WateringManager:
         self.systems: dict[str, dict[str, Any]] = {}
         self.logs: list[dict[str, Any]] = []
         self.active_runs: dict[str, asyncio.Task[None]] = {}
+        self.queued_runs: dict[str, asyncio.Task[None]] = {}
         self.persisted_runs: dict[str, dict[str, Any]] = {}
         self.pending_checks: dict[str, dict[str, Any]] = {}
         self.calibrations: dict[str, dict[str, Any]] = {}
@@ -100,6 +105,7 @@ class WateringManager:
         for task in list(self.active_runs.values()):
             task.cancel()
         for task in [
+            *self.queued_runs.values(),
             *self._post_check_tasks.values(),
             *self._calibration_tasks.values(),
             *self._watchdog_tasks.values(),
@@ -107,6 +113,7 @@ class WateringManager:
             task.cancel()
         tasks = [
             *self.active_runs.values(),
+            *self.queued_runs.values(),
             *self._post_check_tasks.values(),
             *self._calibration_tasks.values(),
             *self._watchdog_tasks.values(),
@@ -169,7 +176,11 @@ class WateringManager:
     async def async_delete_system(self, system_id: str) -> None:
         """Delete a stopped watering system."""
         system = self._get_system(system_id)
-        if system_id in self.active_runs or system_id in self._calibration_tasks:
+        if (
+            system_id in self.active_runs
+            or system_id in self.queued_runs
+            or system_id in self._calibration_tasks
+        ):
             raise ValueError("system_is_running")
         for active_id in {*self.active_runs, *self._calibration_tasks}:
             active = self.systems.get(active_id)
@@ -191,6 +202,9 @@ class WateringManager:
         self.calibrations.pop(system_id, None)
         self.aggregates.pop(system_id, None)
         self.battery_alerts.pop(system_id, None)
+        queued = self.queued_runs.pop(system_id, None)
+        if queued:
+            queued.cancel()
         await self._async_changed()
 
     async def async_run_system(self, system_id: str, trigger: str) -> dict[str, Any]:
@@ -283,11 +297,17 @@ class WateringManager:
     def _ensure_can_start(self, system: dict[str, Any]) -> None:
         if system["id"] in self.active_runs or system["id"] in self._calibration_tasks:
             raise ValueError("system_is_running")
+        if self._watering_group_is_busy(system):
+            raise ValueError("watering_group_is_busy")
+
+    def _watering_group_is_busy(self, system: dict[str, Any]) -> bool:
+        """Return whether another active system uses the same water group."""
         group = system.get("simultaneous_group", "default")
         for active_id in {*self.active_runs, *self._calibration_tasks}:
             active = self.systems.get(active_id)
             if active and active.get("simultaneous_group", "default") == group:
-                raise ValueError("watering_group_is_busy")
+                return True
+        return False
 
     @staticmethod
     def _validate_system(system: dict[str, Any]) -> None:
@@ -556,6 +576,29 @@ class WateringManager:
         cycle_seconds = max(1, total_seconds // cycles)
         started = datetime.now(UTC)
         meter_start = self._read_cumulative_meter(system)
+        meter_delta_liters = 0.0
+        meter_last_liters = meter_start["liters"] if meter_start else None
+        meter_changed = asyncio.Event()
+
+        def record_meter_state(state) -> None:
+            nonlocal meter_delta_liters, meter_last_liters
+            reading = self._cumulative_meter_from_state(state)
+            if reading is None:
+                return
+            current_liters = reading["liters"]
+            if meter_last_liters is not None and current_liters >= meter_last_liters:
+                meter_delta_liters += current_liters - meter_last_liters
+            meter_last_liters = current_liters
+            meter_changed.set()
+
+        cancel_meter_listener = None
+        meter_entity = system.get("water_meter_sensor", "")
+        if meter_entity:
+            cancel_meter_listener = async_track_state_change_event(
+                self.hass,
+                [meter_entity],
+                lambda event: record_meter_state(event.data.get("new_state")),
+            )
         loop = asyncio.get_running_loop()
         valve_opened_at: float | None = None
         total_open_seconds = 0.0
@@ -614,8 +657,26 @@ class WateringManager:
                 if current_flow_lpm is not None:
                     total_volume_liters += current_flow_lpm * cycle_open_seconds / 60
             actual = total_open_seconds / 60
-            meter_end = self._read_cumulative_meter(system)
-            exact_volume = self._meter_delta_liters(meter_start, meter_end)
+            if meter_entity:
+                record_meter_state(self.hass.states.get(meter_entity))
+            if meter_entity and meter_start is not None and meter_delta_liters <= 0:
+                meter_changed.clear()
+                try:
+                    await asyncio.wait_for(
+                        meter_changed.wait(), METER_UPDATE_TIMEOUT_SECONDS
+                    )
+                except TimeoutError:
+                    pass
+                record_meter_state(self.hass.states.get(meter_entity))
+            if cancel_meter_listener:
+                cancel_meter_listener()
+            exact_volume = (
+                meter_delta_liters
+                if meter_start is not None and meter_delta_liters > 0
+                else self._meter_delta_liters(
+                    meter_start, self._read_cumulative_meter(system)
+                )
+            )
             finished_decision = dict(decision)
             finished_decision["reason"] = final_reason
             finished_decision["actual_duration"] = round(actual, 1)
@@ -1432,10 +1493,46 @@ class WateringManager:
             if self._last_schedule_keys.get(system_id) == schedule_key:
                 continue
             self._last_schedule_keys[system_id] = schedule_key
+            if self._watering_group_is_busy(system):
+                self._queue_scheduled_run(system_id)
+                continue
             try:
                 await self.async_run_system(system_id, "schedule")
             except ValueError as err:
                 _LOGGER.warning("Could not start %s: %s", system["name"], err)
+
+    def _queue_scheduled_run(self, system_id: str) -> None:
+        """Queue a due system until its shared watering group is available."""
+        if system_id in self.queued_runs:
+            return
+        self.queued_runs[system_id] = self.hass.async_create_task(
+            self._async_run_when_group_available(system_id),
+            f"watering_manager_queued_run_{system_id}",
+        )
+
+    async def _async_run_when_group_available(self, system_id: str) -> None:
+        try:
+            while True:
+                system = self.systems.get(system_id)
+                if system is None or not system.get("enabled"):
+                    return
+                if not self._watering_group_is_busy(system):
+                    self.queued_runs.pop(system_id, None)
+                    try:
+                        await self.async_run_system(system_id, "schedule")
+                    except ValueError as err:
+                        _LOGGER.warning(
+                            "Could not start queued system %s: %s",
+                            system["name"],
+                            err,
+                        )
+                    return
+                await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            raise
+        finally:
+            if self.queued_runs.get(system_id) is asyncio.current_task():
+                self.queued_runs.pop(system_id, None)
 
     def _read_sensor(self, entity_id: str, system: dict[str, Any]) -> dict[str, Any]:
         if not entity_id:
@@ -1525,9 +1622,15 @@ class WateringManager:
         entity_id = system.get("water_meter_sensor", "")
         if not entity_id:
             return None
-        state = self.hass.states.get(entity_id)
-        value = self._read_numeric(entity_id)
-        if state is None or value is None:
+        return self._cumulative_meter_from_state(self.hass.states.get(entity_id))
+
+    def _cumulative_meter_from_state(self, state) -> dict[str, Any] | None:
+        """Convert one cumulative meter state to litres."""
+        if state is None or state.state in {"unknown", "unavailable"}:
+            return None
+        try:
+            value = float(state.state)
+        except ValueError:
             return None
         unit = state.attributes.get("unit_of_measurement")
         factor = self._volume_unit_to_liters(unit)
